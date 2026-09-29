@@ -48,11 +48,9 @@ public class UserController {
         return ACMResponseBuilder.ok(result);
     }
 
-    @GetMapping("/{}")
-    private ResponseEntity<ApiResponse<UserResponse>> ageAgeType(@RequestParam AgeType ageType) {
-
-        UserResponse resultAge = userService.getAgeQuery(ageType);
+    @GetMapping("/by-age")
+    public ResponseEntity<ApiResponse<List<CreateUserResponseDto>>> getUsersByAgeType(@RequestParam AgeType ageType) {
+        List<CreateUserResponseDto> resultAge = userService.getAgeQuery(ageType);
         return ACMResponseBuilder.ok(resultAge);
     }
-
 }

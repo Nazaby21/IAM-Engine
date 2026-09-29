@@ -69,7 +69,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getAgeQuery(AgeType age) {
-        return null;
+    public List<CreateUserResponseDto> getAgeQuery(AgeType age) {
+        List<UserEntity> users = userDao.findByAgeType(age);
+
+        return users.stream()
+                .map(user -> CreateUserResponseDto.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .age(user.getAge())
+                        .gender(user.getGender())
+                        .build())
+                .toList();
     }
 }

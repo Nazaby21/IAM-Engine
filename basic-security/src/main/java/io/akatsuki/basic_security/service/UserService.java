@@ -15,5 +15,5 @@ public interface UserService {
 
     List<CreateUserResponseDto> getAllUsers();
 
-    UserResponse getAgeQuery(AgeType age);
+    List<CreateUserResponseDto> getAgeQuery(AgeType age);
 }
