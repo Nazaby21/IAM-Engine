@@ -2,15 +2,12 @@ package io.akatsuki.basic_security.common.error;
 
 import io.acmwchsd.core.error.ErrorCategory;
 import io.acmwchsd.core.error.ErrorCode;
-import lombok.Getter;
 
 public enum AuthErrorCode implements ErrorCode {
     INVALID_CREDENTIAL(401, ErrorCategory.AUTHENTICATION, "Invalid Credential");
 
-    @Getter
-    private final ErrorCategory category;
-
     private final int httpStatus;
+    private final ErrorCategory category;
     private final String defaultMessage;
 
     AuthErrorCode(int httpStatus, ErrorCategory category, String defaultMessage) {
@@ -32,5 +29,10 @@ public enum AuthErrorCode implements ErrorCode {
     @Override
     public String defaultMessage() {
         return defaultMessage;
+    }
+
+    @Override
+    public ErrorCategory category() {
+        return category;
     }
 }
