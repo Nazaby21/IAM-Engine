@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.experimental.FieldNameConstants;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldNameConstants
@@ -32,6 +34,9 @@ public class UserEntity {
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "age")
+    private Integer age;
 
     @Column(name = "gender")
     private String gender;
