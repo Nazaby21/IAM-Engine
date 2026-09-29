@@ -6,8 +6,10 @@ import io.akatsuki.basic_security.dao.UserDao;
 import io.akatsuki.basic_security.entity.UserEntity;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class UserDaoImpl implements UserDao {
@@ -23,7 +25,8 @@ public class UserDaoImpl implements UserDao {
     @Override
     public Optional<UserEntity> findById(String id) {
         Query<UserEntity> query = Query.from(UserEntity.class)
-                .where(u -> u.get(UserEntity.Fields.id).eq(id));
+                .where(u -> u.get(UserEntity.Fields.id).eq(id))
+                .where(u -> u.get(UserEntity.Fields.email).isNull());
         return repository.one(query);
     }
 }

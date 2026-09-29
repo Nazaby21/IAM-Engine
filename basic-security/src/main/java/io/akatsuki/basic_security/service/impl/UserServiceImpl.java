@@ -1,5 +1,7 @@
 package io.akatsuki.basic_security.service.impl;
 
+import io.acmwchsd.core.exception.ACMException;
+import io.akatsuki.basic_security.common.error.AuthErrorCode;
 import io.akatsuki.basic_security.dao.UserDao;
 import io.akatsuki.basic_security.dto.response.UserResponse;
 import io.akatsuki.basic_security.entity.UserEntity;
@@ -17,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getId(String id) {
-        UserEntity user = userDao.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity user = userDao.findById(id).orElseThrow(() -> new ACMException(AuthErrorCode.INVALID_CREDENTIAL));
         return new UserResponse(user.getId());
     }
 }
