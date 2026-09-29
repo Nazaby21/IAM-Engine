@@ -1,0 +1,87 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '8.6.0'
+}
+
+group = 'io.akatsuki'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+ext {
+	set('acmwchsdVersion', '4.1.0-SNAPSHOT')
+	set('mapstructVersion', '1.6.3')
+}
+
+repositories {
+	mavenCentral()
+
+	def nexusBase = project.findProperty("KOMNOTRA_URL") ?: System.getenv("KOMNOTRA_NEXUS_BASE_URL")
+	if (nexusBase != null) {
+		["maven-release", "maven-snapshots"].each {repo ->
+			maven {
+				name = repo.replaceAll('-', '').capitalize()
+				url = "${nexusBase}/${repo}"
+
+				credentials {
+					username = project.findProperty("KOMNOTRA_USR") ?: System.getenv("KOMNOTRA_NEXUS_USERNAME")
+					password = project.findProperty("KOMNOTRA_PWD") ?: System.getenv("KOMNOTRA_NEXUS_PASSWORD")
+				}
+			}
+		}
+	}
+}
+
+dependencies {
+	implementation platform("io.acmwchsd:acmwchsd-bom:${acmwchsdVersion}")
+	compileOnly platform("io.acmwchsd:acmwchsd-bom:${acmwchsdVersion}")
+	annotationProcessor platform("io.acmwchsd:acmwchsd-bom:${acmwchsdVersion}")
+	testCompileOnly platform("io.acmwchsd:acmwchsd-bom:${acmwchsdVersion}")
+	testAnnotationProcessor platform("io.acmwchsd:acmwchsd-bom:${acmwchsdVersion}")
+
+	implementation 'io.acmwchsd:acmwchsd-web'
+	implementation 'io.acmwchsd:acmwchsd-data'
+	implementation 'io.acmwchsd:acmwchsd-observability'
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	runtimeOnly 'org.postgresql:postgresql'
+
+	runtimeOnly 'org.flywaydb:flyway-core'
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+	runtimeOnly 'org.springframework.boot:spring-boot-flyway'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+spotless {
+	java {
+		importOrder()
+		palantirJavaFormat()
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}
+
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()
+}
+
+bootJar {
+	archiveFileName = "app.jar"
+	layered { enabled = true}
+}

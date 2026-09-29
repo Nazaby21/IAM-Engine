@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: basic-security
+
+acm:
+  web:
+    json:
+      snake-case: true
+    tracing:
+      enable: true
+    request-logging:
+      enabled: true
+      max-body-size: 4096
+      excluded-paths:
+        - /actuator/**
+        - /health
+        - /ws/**
+
+      masking:
+        sensitive-fields:
+          - token
+          - authorization
+          - national_id
+        mask-pattern: "***MASK FOR SECURITY***"
+        partial-unmask-chars: 4
+
+  datasource:
+    master:
+      host: localhost
+      port: 5432
+      database: basic-security
+      username: postgres
+      password: supersecret
+    flyway:
+      enabled: true
+      locations:
+        - classpath:db.migration
+
+  observability:
+    enabled: true
+    service-name: sensei
+
+    health:
+      enabled: true
