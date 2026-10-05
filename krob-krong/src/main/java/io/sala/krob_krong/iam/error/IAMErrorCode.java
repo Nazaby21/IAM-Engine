@@ -6,16 +6,37 @@ public enum IAMErrorCode implements ErrorCode {
     EMAIL_ALREADY_REGISTERED(409, "That email address is already registered"),
     INVALID_CREDENTIALS(401, "Incorrect email or password"),
     ACCOUNT_SUSPENDED(403, "This account is suspended"),
-    TENANT_SLUG_TAKEN(409, "That workspace URL is already taken"),
-    TENANT_NOT_FOUND(404, "Workspace not found"),
-    NOT_A_MEMBER(403, "You are not a member of this workspace"),
-    MEMBERSHIP_NOT_FOUND(404, "Membership not found"),
+
+    SCHOOL_NOT_FOUND(404, "School not found"),
+    SCHOOL_STATUS_INVALID(400, "School cannot transition to the requested status"),
+    SCHOOL_PROFILE_LOCKED(400, "The school profile is locked while under review"),
+    SCHOOL_PROFILE_INCOMPLETE(400, "The school profile is incomplete for submission"),
+
+    BRANCH_NOT_FOUND(404, "Branch not found"),
+    BRANCH_NOT_READY(400, "The branch needs an address, location and workspace before it opens"),
+
+    WORKSPACE_SLUG_TAKEN(409, "That workspace name is already taken"),
+    WORKSPACE_SLUG_RESERVED(409, "That workspace name is reserved"),
+    WORKSPACE_NOT_FOUND(404, "Workspace not found"),
+
     ROLE_NOT_FOUND(404, "Role not found"),
-    ROLE_KEY_TAKEN(409, "A role with that key already exists in this workspace"),
-    SYSTEM_ROLE_IMMUTABLE(403, "System roles cannot be modified"),
-    PRIVILEGE_CEILING_EXCEEDED(403, "You cannot manage or grant a role ranked at or above your own"),
-    ROLE_IN_USE(409, "This role is still assigned to members and cannot be deleted"),
-    UNKNOWN_PERMISSION(400, "One or more permissions are not in the catalog"),
+    ROLE_GRANT_NOT_ALLOWED(403, "You may not grant or revoke this role"),
+    ROLE_ALREADY_HELD(409, "User already holds this role in this scope"),
+
+    NOT_A_MEMBER(403, "You are not a member of this school"),
+    INVITATION_NOT_FOUND(404, "Invitation not found"),
+    INVITATION_ALREADY_ACCEPTED(400, "This invitation has already been accepted"),
+    LAST_OWNER(400, "A school must keep at least one owner"),
+
+    MEDIA_NOT_FOUND(404, "Media asset not found"),
+    MEDIA_NOT_READY(400, "This file is not ready yet"),
+    MEDIA_IN_USE(400, "This file is in use as a logo, cover or avatar"),
+
+    REVIEW_CONFLICT_OF_INTEREST(403, "Reviewers cannot decide on a school they belong to"),
+
+    SUPPORT_SESSION_EXPIRED(403, "The support session has ended or expired"),
+    SUPPORT_MFA_REQUIRED(403, "Platform roles require MFA"),
+
     INVALID_REFRESH_TOKEN(401, "The session has expired or is invalid"),
     REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again");
 
