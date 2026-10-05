@@ -10,6 +10,7 @@ import io.sala.krob_krong.iam.dto.security.SessionClaims;
 import io.sala.krob_krong.iam.entity.RefreshTokenEntity;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.repository.RefreshTokenRepository;
+import io.sala.krob_krong.iam.specification.RefreshTokenSpecification;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -98,7 +99,7 @@ public class TokenServiceImpl implements TokenService {
             throw new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN);
         }
         RefreshTokenEntity token = refreshTokenRepository
-                .findByTokenHash(hash(rawToken))
+                .findOne(RefreshTokenSpecification.byTokenHash(hash(rawToken)))
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN));
 
         if (token.getRevokedAt() != null) {
@@ -124,7 +125,7 @@ public class TokenServiceImpl implements TokenService {
             return;
         }
         refreshTokenRepository
-                .findByTokenHash(hash(rawToken))
+                .findOne(RefreshTokenSpecification.byTokenHash(hash(rawToken)))
                 .ifPresent(t -> refreshTokenRepository.revokeFamily(t.getFamilyId()));
     }
 

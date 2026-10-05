@@ -23,5 +23,15 @@ public class PageRequest {
         if (page < 0) throw new IllegalArgumentException("page must be >= 0, got " + page);
         if (size < 1 || size > MAX_SIZE)
             throw new IllegalArgumentException("size must be 1-" + MAX_SIZE + ", got " + size);
+        this.page = page;
+        this.size = size;
+    }
+
+    public org.springframework.data.domain.PageRequest toSpring() {
+        return org.springframework.data.domain.PageRequest.of(page, size);
+    }
+
+    public org.springframework.data.domain.PageRequest toSpring(org.springframework.data.domain.Sort sort) {
+        return org.springframework.data.domain.PageRequest.of(page, size, sort);
     }
 }

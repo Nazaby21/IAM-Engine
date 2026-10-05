@@ -17,13 +17,16 @@ public record RiskScore(double score, Level level, List<String> factors) impleme
     }
 
     public static RiskScore of(double score, List<String> factors) {
-        Level level =
-                switch (score) {
-                    case double v when v < 0.25 -> Level.LOW;
-                    case double v when v < 0.50 -> Level.MEDIUM;
-                    case double v when v < 0.75 -> Level.HIGH;
-                    default -> Level.CRITICAL;
-                };
+        Level level;
+        if (score < 0.25) {
+            level = Level.LOW;
+        } else if (score < 0.50) {
+            level = Level.MEDIUM;
+        } else if (score < 0.75) {
+            level = Level.HIGH;
+        } else {
+            level = Level.CRITICAL;
+        }
         return new RiskScore(score, level, factors);
     }
 }
