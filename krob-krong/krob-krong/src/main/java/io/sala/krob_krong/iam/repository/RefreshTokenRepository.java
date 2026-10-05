@@ -15,5 +15,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
     @Query(
             value = "UPDATE refresh_token SET revoked_at = now() WHERE family_id = :fid AND revoked_at IS NULL",
             nativeQuery = true)
-    public int revokeFamily(@Param("fid") String familyId);
+    public void revokeFamily(@Param("fid") String familyId);
 }
