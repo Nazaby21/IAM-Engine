@@ -59,4 +59,27 @@ public class UserDaoImpl implements UserDao {
 
         return repository.list(query);
     }
+
+    @Override
+    public List<UserEntity> findByAgeTypeOrSchool(AgeType ageType, String school) {
+
+        Query<UserEntity> query = Query.from(UserEntity.class);
+
+        if (ageType != null) {
+            switch (ageType) {
+                case YOUNG -> Query.from(UserEntity.class)
+                        .where(u -> u.get(UserEntity.Fields.age).lt(18));
+                case ADULT ->  Query.from(UserEntity.class)
+                        .where(u -> u.get(UserEntity.Fields.age).gte(18))
+                        .where(u -> u.get(UserEntity.Fields.age).lt(35));
+                case OLD -> Query.from(UserEntity.class)
+                        .where(u -> u.get(UserEntity.Fields.age).lte(35));
+            }
+        }
+        if (school != null && !school.isBlank()) {
+            query = query.where(u -> u.get(UserEntity.Fields.email).like("%" + school + "%"));
+        }
+
+        return repository.list(query);
+    }
 }

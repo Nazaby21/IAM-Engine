@@ -53,4 +53,11 @@ public class UserController {
         List<CreateUserResponseDto> resultAge = userService.getAgeQuery(ageType);
         return ACMResponseBuilder.ok(resultAge);
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<List<CreateUserResponseDto>>> searchUsers(
+            @RequestParam(required = false) AgeType ageType,
+            @RequestParam(required = false) String school) {
+        return ACMResponseBuilder.ok(userService.getUserByFilters(ageType, school));
+    }
 }

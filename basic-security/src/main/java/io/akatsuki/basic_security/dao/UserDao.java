@@ -15,4 +15,7 @@ public interface UserDao {
     List<UserEntity> findAllUsers();
 
     List<UserEntity> findByAgeType(AgeType ageType);
+
+    List<UserEntity> findByAgeTypeOrSchool(AgeType ageType, String school);
+
 }

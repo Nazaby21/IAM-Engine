@@ -82,4 +82,19 @@ public class UserServiceImpl implements UserService {
                         .build())
                 .toList();
     }
+
+    @Override
+    public List<CreateUserResponseDto> getUserByFilters(AgeType ageType, String school) {
+        List<UserEntity> users = userDao.findByAgeTypeOrSchool(ageType, school);
+
+        return users.stream()
+                .map(user -> CreateUserResponseDto.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .age(user.getAge())
+                        .gender(user.getGender())
+                        .build())
+                .toList();
+    }
 }

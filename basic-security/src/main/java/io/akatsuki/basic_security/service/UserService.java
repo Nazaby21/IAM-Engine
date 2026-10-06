@@ -16,4 +16,6 @@ public interface UserService {
     List<CreateUserResponseDto> getAllUsers();
 
     List<CreateUserResponseDto> getAgeQuery(AgeType age);
+
+    List<CreateUserResponseDto> getUserByFilters(AgeType ageType,  String school);
 }
