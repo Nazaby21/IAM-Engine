@@ -1,0 +1,44 @@
+info:
+  name: Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/api/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{auth_email}}",
+        "password": "{{auth_password}}",
+        "display_name": "{{auth_display_name}}"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("access_token", res.body.data.access_token);
+          bru.setVar("refresh_token", res.body.data.refresh_token);
+          bru.setVar("current_user_id", res.body.data.user_id);
+        }
+    - type: tests
+      code: |-
+        test("responds 201", () => expect(res.status).to.equal(201));
+        test("returns bearer tokens", () => {
+          expect(res.body.data.token_type).to.equal("Bearer");
+          expect(res.body.data.access_token).to.be.a("string").and.not.empty;
+          expect(res.body.data.refresh_token).to.be.a("string").and.not.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Creates an active, unverified person account with no assigned school/platform role. Password: 15–128 characters. Errors: 400 BAD_REQUEST; 409 EMAIL_ALREADY_REGISTERED.
+  No Authorization header is needed. Tokens are stored with bru.setVar, not written to environment files.

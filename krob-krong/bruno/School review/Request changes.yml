@@ -1,0 +1,31 @@
+---
+info:
+  name: Request changes
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: "{{base_url}}/api/admin/schools/{{school_id}}/review"
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+  body:
+    type: json
+    data: |-
+      {
+        "review_id": "{{review_id}}",
+        "decision": "changes_requested",
+        "reason": "Please correct the school address."
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Reviewer cannot be the creator or have any school membership grant, including
+  historical grants. Changes/rejection require a reason. This decision closes the
+  selected review.

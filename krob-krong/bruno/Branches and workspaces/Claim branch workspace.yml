@@ -1,0 +1,26 @@
+---
+info:
+  name: Claim branch workspace
+  type: http
+  seq: 6
+http:
+  method: PUT
+  url: "{{base_url}}/api/schools/{{school_id}}/branches/{{branch_id}}/workspace"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "slug": "{{workspace_slug}}"
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Choose a new unique workspace_slug for this branch before running. Previously
+  used or reserved names cannot be claimed.

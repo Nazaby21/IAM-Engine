@@ -1,0 +1,20 @@
+---
+info:
+  name: Open branch
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: "{{base_url}}/api/schools/{{school_id}}/branches/{{branch_id}}/open"
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Requires approved school, complete location and current workspace. Opens either
+  the default or an additional branch.

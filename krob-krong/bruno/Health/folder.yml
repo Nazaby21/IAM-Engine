@@ -1,0 +1,8 @@
+info:
+  name: Health
+  type: folder
+  seq: 1
+
+docs:
+  content: Public endpoints; no token needed.
+  type: text/markdown

@@ -1,0 +1,25 @@
+---
+info:
+  name: Onboarding checklist
+  type: http
+  seq: 3
+http:
+  method: GET
+  url: "{{base_url}}/api/schools/{{school_id}}/onboarding"
+  auth: inherit
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 200) {
+        bru.setVar("branch_id", res.body.data.default_branch.id);
+      }
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Returns school, default_branch, missing_fields and can_submit. Stores the default
+  branch_id; rerunning after adding another branch changes branch_id back to the default.

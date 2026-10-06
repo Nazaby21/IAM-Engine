@@ -1,0 +1,20 @@
+---
+info:
+  name: My review history
+  type: http
+  seq: 13
+http:
+  method: GET
+  url: "{{base_url}}/api/schools/{{school_id}}/reviews"
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Owner/editor can inspect submitted snapshots and decision notes. Public and
+  ordinary member access is denied.

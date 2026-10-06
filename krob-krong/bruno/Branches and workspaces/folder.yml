@@ -1,0 +1,13 @@
+---
+info:
+  name: Branches and workspaces
+  type: folder
+  seq: 11
+request:
+  auth: inherit
+docs:
+  content: After approval, open the default branch. Additional branches need their
+    own complete location and unique workspace, then can open without another school
+    review. Add branch sets branch_id; select a fresh workspace_slug before claiming
+    it.
+  type: text/markdown

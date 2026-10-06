@@ -1,6 +1,6 @@
 package io.sala.krob_krong.iam.security.dto;
 
-import io.sala.krob_krong.iam.account.entity.RefreshTokenEntity;
+import io.sala.krob_krong.account.entity.RefreshTokenEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

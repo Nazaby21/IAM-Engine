@@ -1,0 +1,40 @@
+info:
+  name: Refresh token
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/api/auth/refresh"
+  body:
+    type: json
+    data: |-
+      {"refresh_token":"{{refresh_token}}"}
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 200) {
+          bru.setVar("access_token", res.body.data.access_token);
+          bru.setVar("refresh_token", res.body.data.refresh_token);
+          bru.setVar("current_user_id", res.body.data.user_id);
+        }
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("returns bearer tokens", () => {
+          expect(res.body.data.token_type).to.equal("Bearer");
+          expect(res.body.data.access_token).to.be.a("string").and.not.empty;
+          expect(res.body.data.refresh_token).to.be.a("string").and.not.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Uses the latest refresh token once and replaces both tokens in memory. Serialize refresh requests: reusing an old token revokes the entire session. Errors: 401 INVALID_REFRESH_TOKEN or REFRESH_TOKEN_REUSE; 403 ACCOUNT_SUSPENDED or MFA_REQUIRED.
+  No Authorization header is needed. Tokens are stored with bru.setVar, not written to environment files.

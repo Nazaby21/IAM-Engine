@@ -1,0 +1,27 @@
+---
+info:
+  name: Claim workspace
+  type: http
+  seq: 8
+http:
+  method: PUT
+  url: "{{base_url}}/api/schools/{{school_id}}/branches/{{branch_id}}/workspace"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "slug": "{{workspace_slug}}"
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Requires branch_id from the checklist. Lowercase letters/digits/hyphens, 3–63
+  characters, no leading/trailing or repeated hyphens. Reserved and previously used
+  names return 409. Renaming retires the old name permanently.

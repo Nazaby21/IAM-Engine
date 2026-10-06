@@ -1,16 +1,16 @@
 package io.sala.krob_krong.iam.security.impl;
 
+import io.sala.krob_krong.account.entity.RefreshTokenEntity;
+import io.sala.krob_krong.account.repository.RefreshTokenRepository;
+import io.sala.krob_krong.account.specification.RefreshTokenSpecification;
 import io.sala.krob_krong.common.exceptions.BusinessException;
-import io.sala.krob_krong.iam.security.config.JwtProperties;
-import io.sala.krob_krong.iam.security.Principals;
+import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
+import io.sala.krob_krong.iam.security.config.JwtProperties;
 import io.sala.krob_krong.iam.security.dto.AccessToken;
 import io.sala.krob_krong.iam.security.dto.IssuedRefresh;
 import io.sala.krob_krong.iam.security.dto.SessionClaims;
-import io.sala.krob_krong.iam.account.entity.RefreshTokenEntity;
-import io.sala.krob_krong.iam.error.IAMErrorCode;
-import io.sala.krob_krong.iam.account.repository.RefreshTokenRepository;
-import io.sala.krob_krong.iam.account.specification.RefreshTokenSpecification;
+import io.sala.krob_krong.iam.security.jwt.TokenClaims;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -47,23 +46,25 @@ public class TokenServiceImpl implements TokenService {
 
         JwtClaimsSet.Builder builder = JwtClaimsSet.builder()
                 .issuer(props.getIssuer())
+                .audience(List.of(props.getAudience()))
                 .issuedAt(now)
+                .notBefore(now)
                 .expiresAt(expiresAt)
                 .id(UUID.randomUUID().toString())
-                .subject(claims.getUserId())
-                .claim("name", claims.getDisplayName())
-                .claim(Principals.CLAIM_EMAIL, claims.getEmail())
-                .claim(Principals.CLAIM_PLATFORM_ADMIN, Boolean.toString(claims.isPlatformAdmin()))
-                .claim("permissions", List.copyOf(claims.getPermissionAuthorities()));
-
-        if (StringUtils.hasText(claims.getTenantId())) {
-            builder.claim(Principals.CLAIM_TENANT, claims.getTenantId());
+                .subject(claims.getUserId().toString())
+                .claim(TokenClaims.SESSION_ID, claims.getSessionId().toString())
+                .claim(TokenClaims.KIND, claims.getKind())
+                .claim(TokenClaims.MFA, claims.isMfaVerified());
+        if (StringUtils.hasText(claims.getDisplayName())) {
+            builder.claim(TokenClaims.NAME, claims.getDisplayName());
         }
-        if (!ObjectUtils.isEmpty(claims.getRolesKeys())) {
-            builder.claim(Principals.CLAIM_ROLES, String.join(",", claims.getRolesKeys()));
+        if (StringUtils.hasText(claims.getEmail())) {
+            builder.claim(TokenClaims.EMAIL, claims.getEmail());
         }
 
-        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256)
+                .type(TokenClaims.ACCESS_TOKEN_TYPE)
+                .build();
         String value = jwtEncoder
                 .encode(JwtEncoderParameters.from(header, builder.build()))
                 .getTokenValue();
@@ -77,15 +78,12 @@ public class TokenServiceImpl implements TokenService {
 
     // ---- Refresh tokens -----------------------------------------------------
     @Override
-    public IssuedRefresh issueRefreshToken(
-            String userId, String tenantId, String familyId, String userAgent, String ip) {
+    public IssuedRefresh issueRefreshToken(UUID userId, UUID sessionId, String userAgent, String ip) {
         String raw = randomToken();
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setUserId(userId);
-        entity.setTenantId(tenantId);
+        entity.setFamilyId(sessionId != null ? sessionId : UUID.randomUUID());
         entity.setTokenHash(hash(raw));
-        entity.setFamilyId(
-                StringUtils.hasText(familyId) ? familyId : UUID.randomUUID().toString());
         entity.setExpiresAt(Instant.now().plus(props.getRefreshTtl()));
         entity.setUserAgent(truncate(userAgent));
         entity.setIp(ip);
@@ -94,29 +92,34 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public RefreshTokenEntity requireActive(String rawToken) {
+    public RefreshTokenEntity findRefreshToken(String rawToken) {
         if (!StringUtils.hasText(rawToken)) {
             throw new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN);
         }
-        RefreshTokenEntity token = refreshTokenRepository
+        return refreshTokenRepository
                 .findOne(RefreshTokenSpecification.byTokenHash(hash(rawToken)))
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN));
+    }
 
+    @Override
+    public RefreshTokenEntity requireActive(String rawToken) {
+        RefreshTokenEntity token = findRefreshToken(rawToken);
         if (token.getRevokedAt() != null) {
-            refreshTokenRepository.revokeFamily(token.getFamilyId());
+            refreshTokenRepository.revokeFamily(token.getFamilyId(), Instant.now());
             throw new BusinessException(IAMErrorCode.REFRESH_TOKEN_REUSE);
         }
-        if (token.getExpiresAt().isBefore(Instant.now())) {
+        if (!token.getExpiresAt().isAfter(Instant.now())) {
             throw new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN);
         }
         return token;
     }
 
     @Override
-    public void markRotated(RefreshTokenEntity previous, String replacedById) {
-        previous.setRevokedAt(Instant.now());
-        previous.setReplacedBy(replacedById);
-        refreshTokenRepository.save(previous);
+    public void markRotated(RefreshTokenEntity previous, UUID replacedById) {
+        if (refreshTokenRepository.rotate(previous.getId(), replacedById, Instant.now()) == 0) {
+            refreshTokenRepository.revokeFamily(previous.getFamilyId(), Instant.now());
+            throw new BusinessException(IAMErrorCode.REFRESH_TOKEN_REUSE);
+        }
     }
 
     @Override
@@ -126,10 +129,11 @@ public class TokenServiceImpl implements TokenService {
         }
         refreshTokenRepository
                 .findOne(RefreshTokenSpecification.byTokenHash(hash(rawToken)))
-                .ifPresent(t -> refreshTokenRepository.revokeFamily(t.getFamilyId()));
+                .ifPresent(t -> refreshTokenRepository.revokeFamily(t.getFamilyId(), Instant.now()));
     }
 
     // ---- helpers ------------------------------------------------------------
+
     private static String randomToken() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);

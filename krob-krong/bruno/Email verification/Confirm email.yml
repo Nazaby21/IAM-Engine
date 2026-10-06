@@ -1,0 +1,25 @@
+---
+info:
+  name: Confirm email
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: "{{base_url}}/api/auth/verify-email"
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{verification_token}}"
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Copy the token from your email link. Public endpoint. Expired, superseded and
+  consumed tokens return 400. Browser confirmation is an alternative to this request.

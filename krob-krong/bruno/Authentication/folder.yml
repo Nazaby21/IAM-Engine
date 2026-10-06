@@ -1,0 +1,8 @@
+info:
+  name: Authentication
+  type: folder
+  seq: 2
+
+docs:
+  content: Public normal-user authentication. Set auth_email, auth_display_name and the auth_password secret. Tokens are kept in memory for this run.
+  type: text/markdown

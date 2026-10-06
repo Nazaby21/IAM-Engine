@@ -1,0 +1,38 @@
+info:
+  name: Effective permissions
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{base_url}}/api/permissions/effective?school_id={{school_id}}"
+  params:
+    - name: school_id
+      value: "{{school_id}}"
+      type: query
+    - name: branch_id
+      value: "{{branch_id}}"
+      type: query
+      disabled: true
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("uses the ApiResponse envelope", () => {
+          expect(res.body).to.have.property("data");
+          expect(res.body.error).to.equal(null);
+        });
+        test("is a list of codes", () => expect(res.body.data).to.be.an("array"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Every permission code the **caller** has in that school (and branch), including public ones
+  and ones that apply to themselves. Without `school_id`: platform-level permissions.

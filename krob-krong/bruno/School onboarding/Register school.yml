@@ -1,0 +1,36 @@
+---
+info:
+  name: Register school
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: "{{base_url}}/api/schools"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "display_name": "{{school_display_name}}",
+        "legal_name": null,
+        "registration_no": null,
+        "description": "A community school in Phnom Penh.",
+        "contact_email": "school@example.com",
+        "contact_phone": null
+      }
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 201) {
+        bru.setVar("school_id", res.body.data.id);
+      }
+  - type: tests
+    code: test("responds 201", () => expect(res.status).to.equal(201));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Verified person required. Creates a draft school, accepted school_owner grant
+  and draft default branch in one transaction. Stores school_id.

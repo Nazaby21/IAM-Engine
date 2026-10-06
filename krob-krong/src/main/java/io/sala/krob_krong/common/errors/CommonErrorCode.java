@@ -7,6 +7,8 @@ public enum CommonErrorCode implements ErrorCode {
     FORBIDDEN(403, ErrorCategory.AUTHORIZATION, "Access denied"),
     RESOURCE_NOT_FOUND(404, ErrorCategory.NOT_FOUND, "Resource not found"),
     METHOD_NOT_ALLOWED(405, ErrorCategory.VALIDATION, "Method not allowed"),
+    CONFLICT(409, ErrorCategory.VALIDATION, "Conflict"),
+    STORAGE_ERROR(502, ErrorCategory.INTERNAL, "Object storage request failed"),
     UNSUPPORTED_MEDIA_TYPE(415, ErrorCategory.VALIDATION, "Unsupported media type");
 
     private final int httpStatus;

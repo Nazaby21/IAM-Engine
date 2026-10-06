@@ -1,0 +1,28 @@
+---
+info:
+  name: Suspend
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: "{{base_url}}/api/admin/schools/{{school_id}}/suspend"
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+  body:
+    type: json
+    data: |-
+      {
+        "reason": "Access suspended pending investigation."
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Approved schools only. All workspaces stop resolving; members lose school access.
+  Existing image copies already downloaded cannot be revoked.

@@ -1,0 +1,84 @@
+opencollection: 1.0.0
+
+info:
+  name: Krob Krong
+
+request:
+  headers:
+    - name: X-Request-ID
+      value: "{{$randomUUID}}"
+  auth:
+    type: bearer
+    token: "{{access_token}}"
+
+docs:
+  content: |
+    # Krob Krong API
+
+    Requests for every endpoint of the Krob Krong backend, grouped like the API.
+
+    ## Setup
+
+    1. Start the stack and the app: `docker compose up -d --wait` then `./gradlew bootRun`.
+    2. Select the **Local** environment.
+    3. Set `auth_email`, `auth_display_name` and the `auth_password` secret (15–128 characters for registration).
+    4. Run *Authentication → Register* for a new account, or *Login* for an existing one.
+       These requests store `access_token`, `refresh_token` and `current_user_id` in memory with `bru.setVar`.
+       Protected requests inherit `Authorization: Bearer {{access_token}}`; Authentication, Health and Security checks send none.
+    5. Run *Refresh token* to rotate both tokens. Use only the latest refresh token and serialize refresh requests.
+
+    Registration creates an unverified person, with no school/platform roles. MFA-enabled accounts require a separate MFA flow.
+    A token stops working as soon as its session (refresh-token family) is revoked or the account is deactivated.
+
+    ## School onboarding
+
+    After registration, run **Email verification → Send verification email**. Read the local inbox at
+    http://localhost:8025 and open its link, then click Verify email. Alternatively copy the token into
+    the `verification_token` secret and run **Confirm email**. Do not confirm the same link twice.
+
+    Set `school_display_name`, choose an unused `workspace_slug`, and select absolute JPEG/PNG file paths
+    for `logo_file` and `cover_file`. Run **School onboarding** from Register school through Submit for review.
+    The checklist and default-branch requests select `branch_id`; uploads capture their asset IDs.
+
+    **School review** uses the separate `admin_access_token` secret. It requires a super admin with an
+    MFA-verified session; the repository does not yet implement MFA login. Review the snapshot, then choose
+    exactly one of Approve, Request changes, or Reject. Changes requested unlocks editing and resubmission;
+    rejection is terminal. Refresh Reviews after every resubmission to capture the new `review_id`.
+
+    After approval, run **Branches and workspaces → Open branch**, then Resolve workspace. Invite instructors
+    and students using Members. Adding a branch selects its `branch_id`; give it a new `workspace_slug`,
+    claim it, then open it without another review. These stateful requests are a manual workflow, not a
+    collection-wide batch test. Suspension makes workspaces and branding unavailable until reinstatement.
+
+    See `docs/onboarding.md` in the repository for the full API and SMTP setup.
+
+    ## Variables
+
+    | Variable | Used by | Set by |
+    |---|---|---|
+    | `base_url` | everything | environment (`http://localhost:8080`) |
+    | `access_token` | protected requests | Register / Login / Refresh token (runtime), or you (secret) |
+    | `refresh_token` | Refresh token | Register / Login / Refresh token (runtime) |
+    | `auth_email`, `auth_display_name`, `auth_password` | Authentication | you (password is secret) |
+    | `current_user_id` | authenticated identity | Register / Login / Refresh token |
+    | `school_id`, `branch_id` | school-scoped requests | Register school / checklist / branch requests |
+    | `user_id` | member requests, invite | you |
+    | `role_code` | *List roles* picks the role with this code into `role_id` | environment (`student`) |
+    | `role_id` | *Get role*, *Invite member* | *List roles*, or you |
+    | `permission_code` | *Get permission* | environment (`member:read`) |
+    | `user_role_id` | *Accept invitation*, *Revoke role* | *Invite member* / *List my invitations*, or you |
+
+    Every request also sends a fresh `X-Request-ID`.
+
+    ## Responses
+
+    Success: `{ "data": …, "error": null, "request_id": …, "trace_id": …, "timestamp": … }`.
+    Failure: `data` is null and `error` has `code`, `message`, `category`, `details`.
+    401 means the token is missing, invalid, expired or revoked; 403 means the caller lacks the permission.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

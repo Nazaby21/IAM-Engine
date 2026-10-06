@@ -1,0 +1,11 @@
+info:
+  name: Permissions
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
+
+docs:
+  content: The permission catalog and the caller's effective permissions.
+  type: text/markdown

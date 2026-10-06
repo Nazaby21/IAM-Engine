@@ -1,0 +1,13 @@
+---
+info:
+  name: Email verification
+  type: folder
+  seq: 8
+request:
+  auth: inherit
+docs:
+  content: After signup, request a verification email. Open the Mailpit inbox at http://localhost:8025
+    and click its link, then click Verify email. Alternatively copy its token into
+    verification_token and run Confirm email. A link is single-use; do not run both
+    confirmation methods.
+  type: text/markdown

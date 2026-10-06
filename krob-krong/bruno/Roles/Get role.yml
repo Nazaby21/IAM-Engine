@@ -1,0 +1,27 @@
+info:
+  name: Get role
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base_url}}/api/roles/{{role_id}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("uses the ApiResponse envelope", () => {
+          expect(res.body).to.have.property("data");
+          expect(res.body.error).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: One role with its permissions (code + scope) and the roles it may grant. Any signed-in user.

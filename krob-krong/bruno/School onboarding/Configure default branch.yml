@@ -1,0 +1,38 @@
+---
+info:
+  name: Configure default branch
+  type: http
+  seq: 7
+http:
+  method: PUT
+  url: "{{base_url}}/api/schools/{{school_id}}/default-branch"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Main branch",
+        "address_line": "12 Example Street",
+        "province": "Phnom Penh",
+        "district": "Daun Penh",
+        "country_code": "KH",
+        "latitude": 11.5564,
+        "longitude": 104.9282,
+        "timezone": "Asia/Phnom_Penh"
+      }
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 200) {
+        bru.setVar("branch_id", res.body.data.id);
+      }
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Address, province, latitude and longitude are required; timezone must be valid.
+  Stores default branch_id.

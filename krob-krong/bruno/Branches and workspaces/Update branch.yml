@@ -1,0 +1,32 @@
+---
+info:
+  name: Update branch
+  type: http
+  seq: 5
+http:
+  method: PUT
+  url: "{{base_url}}/api/schools/{{school_id}}/branches/{{branch_id}}"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Main branch",
+        "address_line": "12 Example Street",
+        "province": "Phnom Penh",
+        "district": "Daun Penh",
+        "country_code": "KH",
+        "latitude": 11.5564,
+        "longitude": 104.9282,
+        "timezone": "Asia/Phnom_Penh"
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Updates selected branch profile and location; pending school review locks editing.

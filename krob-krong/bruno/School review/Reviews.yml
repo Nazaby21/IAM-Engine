@@ -1,0 +1,29 @@
+---
+info:
+  name: Reviews
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: "{{base_url}}/api/schools/{{school_id}}/reviews"
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 200) {
+        const pending = res.body.data.find(review => !review.decision);
+        if (pending) bru.setVar("review_id", pending.id);
+        else bru.setVar("review_id", "");
+      }
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Inspect the pending snapshot before deciding. Stores the pending review_id.
+  Resubmission creates a new id; stale decisions return 409.

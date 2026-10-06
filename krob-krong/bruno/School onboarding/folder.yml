@@ -1,0 +1,13 @@
+---
+info:
+  name: School onboarding
+  type: folder
+  seq: 9
+request:
+  auth: inherit
+docs:
+  content: Run in order after email verification. Configure absolute local logo_file
+    and cover_file paths to JPEG or PNG images and choose an unused workspace_slug.
+    PUT profile replaces profile fields. Submission locks edits until changes are
+    requested.
+  type: text/markdown

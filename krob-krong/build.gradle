@@ -27,16 +27,24 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
+	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
 
-	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.postgresql:postgresql'
 
 	// Flyway for auto migration
 	runtimeOnly 'org.flywaydb:flyway-core'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 	runtimeOnly 'org.springframework.boot:spring-boot-flyway'
+
+	// Object storage (S3 API; RustFS locally)
+	implementation platform('software.amazon.awssdk:bom:2.55.11')
+	implementation('software.amazon.awssdk:s3') {
+		exclude group: 'software.amazon.awssdk', module: 'netty-nio-client'
+	}
 
 	// Lombok and Mapstruct
 	compileOnly 'org.projectlombok:lombok'
@@ -58,6 +66,7 @@ dependencies {
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
@@ -75,4 +84,10 @@ spotless {
 
 tasks.withType(Test).configureEach {
 	useJUnitPlatform()
+}
+
+tasks.named('bootRun') {
+	if (!System.getenv('SPRING_PROFILES_ACTIVE')) {
+		systemProperty 'spring.profiles.active', 'local'
+	}
 }

@@ -1,18 +1,18 @@
 package io.sala.krob_krong.common.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.sala.krob_krong.common.errors.ApiError;
 import io.sala.krob_krong.common.utils.TraceContext;
 import java.time.Instant;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class ApiResponse<T> {
 
     private T data;
@@ -21,9 +21,28 @@ public class ApiResponse<T> {
     private String traceId;
     private Instant timestamp;
 
+    // Transport metadata only; the JSON envelope stays unchanged.
+    @JsonIgnore
+    @Setter(lombok.AccessLevel.NONE)
+    private HttpStatus httpStatus;
+
+    public ApiResponse(T data, ApiError error, String requestId, String traceId, Instant timestamp) {
+        this.data = data;
+        this.error = error;
+        this.requestId = requestId;
+        this.traceId = traceId;
+        this.timestamp = timestamp;
+    }
+
     // -- Factory Methods --
     public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>(data, null, requestId(), traceId(), Instant.now());
+    }
+
+    public static <T> ApiResponse<T> create(T data) {
+        ApiResponse<T> response = success(data);
+        response.httpStatus = HttpStatus.CREATED;
+        return response;
     }
 
     public static ApiResponse<Void> error(ApiError error) {

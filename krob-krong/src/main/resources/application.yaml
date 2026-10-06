@@ -1,9 +1,27 @@
 spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+      mail.smtp.starttls.required: ${SMTP_STARTTLS:false}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   application:
     name: krob-krong
   threads:
     virtual:
-      enable: true
+      enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/krob_krong
     username: postgres
@@ -18,10 +36,35 @@ spring:
       max-lifetime: 1800000      # 30 minutes
       keepalive-time: 60000      # 1 minute
       leak-detection-threshold: 2000 # 2 seconds (DEV/TEST recommended)
+      data-source-properties:
+        options: "-c idle_in_transaction_session_timeout=30s"
   flyway:
     enabled: true
     locations: db/migration
     table: flyway_schema_history
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+krob-krong:
+  account:
+    verification:
+      from: ${VERIFICATION_FROM:no-reply@localhost}
+      url: ${VERIFICATION_URL:http://localhost:8080/api/auth/verify-email}
+  security:
+    jwt:
+      secret: local-development-signing-key-never-use-in-production
+      ttl: 12h
+    cors:
+      allowed-origins: http://localhost:3000, http://localhost:5173
+  storage:
+    s3:
+      endpoint: http://localhost:9000
+      access-key: krobkrong
+      secret-key: krobkrong-secret
+      bucket: krob-krong
+      auto-create-bucket: true
 
 mask:
   sensitive-fields:

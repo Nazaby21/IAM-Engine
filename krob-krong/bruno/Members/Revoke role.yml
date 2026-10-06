@@ -1,0 +1,34 @@
+info:
+  name: Revoke role
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{base_url}}/api/user-roles/{{user_role_id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "reason": "No longer teaching at this branch"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("grant is revoked", () => expect(res.body.data.status).to.equal("revoked"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Ends a grant (or declines an invitation). Allowed for the grant holder, or for someone who may grant
+  that role there. The body is optional.
+
+  A school must keep at least one owner: revoking the last `school_owner` grant fails with 400.

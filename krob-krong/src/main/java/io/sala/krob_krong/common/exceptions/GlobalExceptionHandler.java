@@ -5,19 +5,26 @@ import io.sala.krob_krong.common.errors.CommonErrorCode;
 import io.sala.krob_krong.common.errors.ErrorCategory;
 import io.sala.krob_krong.common.response.ApiResponse;
 import io.sala.krob_krong.common.utils.TraceContext;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import tools.jackson.databind.PropertyNamingStrategies;
 
 @Slf4j
 @RestControllerAdvice
@@ -26,7 +33,9 @@ public class GlobalExceptionHandler {
     private final ExceptionTranslator translator;
     private final boolean exposeMessageOnUnknown;
 
-    public GlobalExceptionHandler(List<ExceptionMapper<?>> mappers, boolean exposeMessageOnUnknown) {
+    public GlobalExceptionHandler(
+            List<ExceptionMapper<?>> mappers,
+            @Value("${krob-krong.errors.expose-unknown-message:false}") boolean exposeMessageOnUnknown) {
         this.translator = new ExceptionTranslator(mappers, exposeMessageOnUnknown);
         this.exposeMessageOnUnknown = exposeMessageOnUnknown;
     }
@@ -44,15 +53,40 @@ public class GlobalExceptionHandler {
     // -----------------------------------------------------------------------
     @ExceptionHandler({
         MissingServletRequestParameterException.class,
+        MissingServletRequestPartException.class,
         HttpMessageNotReadableException.class,
         MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ex) {
         ApiError error = ApiError.of(
                 CommonErrorCode.BAD_REQUEST.code(),
-                ex.getMessage() != null ? ex.getMessage() : CommonErrorCode.BAD_REQUEST.defaultMessage(),
+                ex instanceof HttpMessageNotReadableException
+                        ? "Malformed request body"
+                        : ex.getMessage() != null ? ex.getMessage() : CommonErrorCode.BAD_REQUEST.defaultMessage(),
                 ErrorCategory.VALIDATION);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(error));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOversizedUpload(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(413)
+                .body(ApiResponse.error(
+                        ApiError.of("IMAGE_TOO_LARGE", "Maximum image upload is 10 MiB", ErrorCategory.VALIDATION)));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new LinkedHashMap<>();
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error -> fields.putIfAbsent(
+                        PropertyNamingStrategies.SNAKE_CASE.nameForField(null, null, error.getField()),
+                        error.getDefaultMessage()));
+        ApiError error = ApiError.of(
+                        CommonErrorCode.BAD_REQUEST.code(), "Request validation failed", ErrorCategory.VALIDATION)
+                .withDetail("fields", fields);
+        // Never include rejected values: authentication requests contain passwords and tokens.
+        return ResponseEntity.badRequest().body(ApiResponse.error(error));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

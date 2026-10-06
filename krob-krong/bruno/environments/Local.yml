@@ -1,0 +1,46 @@
+name: Local
+variables:
+  - name: base_url
+    value: http://localhost:8080
+  - name: school_id
+    value: ""
+  - name: branch_id
+    value: ""
+  - name: user_id
+    value: ""
+  - name: role_code
+    value: student
+  - name: role_id
+    value: ""
+  - name: permission_code
+    value: member:read
+  - name: user_role_id
+    value: ""
+  - name: auth_email
+    value: person@example.com
+  - name: auth_display_name
+    value: Normal Person
+  - secret: true
+    name: auth_password
+  - secret: true
+    name: refresh_token
+  - secret: true
+    name: access_token
+  - name: school_display_name
+    value: Example School
+  - name: workspace_slug
+    value: example-school-change-me
+  - name: logo_file
+    value: ""
+  - name: cover_file
+    value: ""
+  - name: logo_asset_id
+    value: ""
+  - name: cover_asset_id
+    value: ""
+  - name: review_id
+    value: ""
+  - secret: true
+    name: verification_token
+  - secret: true
+    name: admin_access_token

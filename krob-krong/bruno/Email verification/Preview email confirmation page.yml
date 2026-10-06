@@ -1,0 +1,19 @@
+---
+info:
+  name: Preview email confirmation page
+  type: http
+  seq: 3
+http:
+  method: GET
+  url: "{{base_url}}/api/auth/verify-email?token={{verification_token}}"
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Returns an HTML confirmation form. GET does not consume the link; the browser
+  form POST does.

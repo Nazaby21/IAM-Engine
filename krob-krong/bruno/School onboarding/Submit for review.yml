@@ -1,0 +1,21 @@
+---
+info:
+  name: Submit for review
+  type: http
+  seq: 9
+http:
+  method: POST
+  url: "{{base_url}}/api/schools/{{school_id}}/submit"
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Draft or changes_requested only. Requires both images ready, complete default
+  branch and current workspace. Creates an immutable review snapshot. Fetch Reviews
+  to get its review_id.

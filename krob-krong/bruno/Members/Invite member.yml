@@ -1,0 +1,44 @@
+info:
+  name: Invite member
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/api/schools/{{school_id}}/members/invite"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "{{user_id}}",
+        "role_id": "{{role_id}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("user_role_id", res.body.data.id);
+        }
+    - type: tests
+      code: |-
+        test("responds 201", () => expect(res.status).to.equal(201));
+        test("invitation is pending", () => expect(res.body.data.status).to.equal("pending"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Invites `user_id` to `role_id` in the school. The caller's roles must allow granting that role there
+  (see *Grantable roles*); nobody can invite themselves.
+
+  Optional fields: `"branch_id"` to limit the role to one branch (only for roles that allow it) and
+  `"valid_to"` (ISO-8601 instant) for a grant that expires.
+
+  Errors: 403 `ROLE_GRANT_NOT_ALLOWED`, 409 `ROLE_ALREADY_HELD` (already holds or is invited), 404 `USER_NOT_FOUND`.
+  Stores the new grant id in `user_role_id`.

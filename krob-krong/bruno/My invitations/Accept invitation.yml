@@ -1,0 +1,26 @@
+info:
+  name: Accept invitation
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/api/me/invitations/{{user_role_id}}/accept"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("grant is active", () => expect(res.body.data.status).to.equal("active"));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  Accepts an invitation. Only the invited person can accept, once
+  (400 `INVITATION_ALREADY_ACCEPTED` the second time).

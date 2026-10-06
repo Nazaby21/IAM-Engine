@@ -1,0 +1,27 @@
+info:
+  name: Member roles
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base_url}}/api/schools/{{school_id}}/members/{{user_id}}/roles"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 200", () => expect(res.status).to.equal(200));
+        test("uses the ApiResponse envelope", () => {
+          expect(res.body).to.have.property("data");
+          expect(res.body.error).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: One member's grants in the school. Requires `member:read` in the school, or `user_id` must be the caller.

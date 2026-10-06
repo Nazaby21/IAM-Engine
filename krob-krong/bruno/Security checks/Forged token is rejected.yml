@@ -1,0 +1,26 @@
+info:
+  name: Forged token is rejected
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base_url}}/api/roles"
+  headers:
+    - name: Authorization
+      value: Bearer not.a.real-token
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("responds 401", () => expect(res.status).to.equal(401));
+        test("names the problem", () => expect(res.headers["www-authenticate"]).to.equal('Bearer error="invalid_token"'));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: A token that fails signature, issuer, audience, type or session checks gets 401 `invalid_token`.

@@ -1,7 +1,6 @@
 package io.sala.krob_krong.iam.security.dto;
 
-import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,11 +13,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SessionClaims {
-    private String userId;
+    private UUID userId;
+    private UUID sessionId;
+    private String kind;
     private String displayName;
     private String email;
-    private boolean platformAdmin;
-    private String tenantId;
-    private List<String> rolesKeys;
-    private Set<String> permissionAuthorities;
+    private boolean mfaVerified;
 }

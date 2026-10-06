@@ -1,0 +1,31 @@
+---
+info:
+  name: Update school profile
+  type: http
+  seq: 4
+http:
+  method: PUT
+  url: "{{base_url}}/api/schools/{{school_id}}/profile"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "display_name": "{{school_display_name}}",
+        "legal_name": null,
+        "registration_no": null,
+        "description": "A community school in Phnom Penh.",
+        "contact_email": "school@example.com",
+        "contact_phone": null
+      }
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Full profile replacement. Omitted optional fields become null. Pending review
+  is locked. After approval display_name, legal_name and registration_no are immutable.

@@ -1,0 +1,22 @@
+---
+info:
+  name: Reinstate
+  type: http
+  seq: 7
+http:
+  method: POST
+  url: "{{base_url}}/api/admin/schools/{{school_id}}/reinstate"
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Suspended schools only. Restores approved status; existing active branches become
+  reachable again. Cannot reinstate a rejected school.

@@ -1,0 +1,21 @@
+---
+info:
+  name: Send verification email
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: "{{base_url}}/api/me/email-verification"
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Requires the unverified account access_token. Sends via configured SMTP; 60-second
+  resend cooldown, 24-hour expiry. No raw token in the response. An SMTP failure returns
+  503 and allows retry.

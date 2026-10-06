@@ -1,0 +1,34 @@
+---
+info:
+  name: Upload cover
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: "{{base_url}}/api/schools/{{school_id}}/cover"
+  auth: inherit
+  body:
+    type: multipart-form
+    data:
+    - name: file
+      type: file
+      value:
+      - "{{cover_file}}"
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 201) {
+        bru.setVar("cover_asset_id", res.body.data.id);
+      }
+  - type: tests
+    code: test("responds 201", () => expect(res.status).to.equal(201));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Choose cover_file as an absolute file path. JPEG/PNG only; max 10 MiB, 8192
+  pixels per side and 12 million pixels. Server validates, re-encodes, stores, marks
+  ready and attaches the image. Do not manually add Content-Type; Bruno generates
+  the multipart boundary.

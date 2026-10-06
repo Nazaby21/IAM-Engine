@@ -1,6 +1,6 @@
 package io.sala.krob_krong.common.utils;
 
-import io.sala.krob_krong.common.config.properties.MaskingConfig;
+import io.sala.krob_krong.common.properties.MaskingConfig;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

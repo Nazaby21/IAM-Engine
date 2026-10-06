@@ -1,0 +1,11 @@
+info:
+  name: Members
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
+
+docs:
+  content: Members of a school, inviting people to roles, and revoking grants.
+  type: text/markdown

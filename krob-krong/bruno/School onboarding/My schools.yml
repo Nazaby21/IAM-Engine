@@ -1,0 +1,20 @@
+---
+info:
+  name: My schools
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: "{{base_url}}/api/me/schools?page=0&size=20"
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: test("responds 200", () => expect(res.status).to.equal(200));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Owner summaries, including status_reason for suspended or rejected schools.
+  Does not overwrite the active school_id.

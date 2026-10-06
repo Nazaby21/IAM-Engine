@@ -1,0 +1,38 @@
+---
+info:
+  name: Add branch
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: "{{base_url}}/api/schools/{{school_id}}/branches"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Second branch",
+        "address_line": "12 Example Street",
+        "province": "Phnom Penh",
+        "district": "Daun Penh",
+        "country_code": "KH",
+        "latitude": 11.5564,
+        "longitude": 104.9282,
+        "timezone": "Asia/Phnom_Penh"
+      }
+runtime:
+  scripts:
+  - type: after-response
+    code: |-
+      if (res.status === 201) {
+        bru.setVar("branch_id", res.body.data.id);
+      }
+  - type: tests
+    code: test("responds 201", () => expect(res.status).to.equal(201));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Approved schools only. Creates a draft branch and selects its branch_id. Choose
+  a new workspace_slug, claim it, then Open branch. No second school review.

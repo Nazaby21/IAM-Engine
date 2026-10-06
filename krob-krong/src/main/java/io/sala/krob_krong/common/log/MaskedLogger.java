@@ -1,6 +1,6 @@
 package io.sala.krob_krong.common.log;
 
-import io.sala.krob_krong.common.config.properties.MaskingConfig;
+import io.sala.krob_krong.common.properties.MaskingConfig;
 import io.sala.krob_krong.common.utils.JsonMasker;
 import io.sala.krob_krong.common.utils.XmlMasker;
 import java.util.LinkedHashMap;

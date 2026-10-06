@@ -1,0 +1,8 @@
+info:
+  name: Security checks
+  type: folder
+  seq: 6
+
+docs:
+  content: Requests that must be rejected. Useful as a quick check of the security setup.
+  type: text/markdown
