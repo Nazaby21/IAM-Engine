@@ -56,8 +56,9 @@ curl localhost:8080/actuator/health
 | Valkey | `localhost:6379` | password `supersecret` |
 | Mailpit | SMTP `localhost:1025`, inbox http://localhost:8025 | local capture; no credentials |
 
-Every value in [compose.yaml](docker-compose.yaml) can be overridden from a `.env` file next to it
-(`POSTGRES_PASSWORD`, `RUSTFS_SECRET_KEY`, `VALKEY_PASSWORD`, `POSTGRES_PORT`, …). Data lives in named volumes;
+The variables declared in [docker-compose.yaml](docker-compose.yaml) can be overridden from a `.env` file
+next to it (`POSTGRES_PASSWORD`, `RUSTFS_SECRET_KEY`, `VALKEY_PASSWORD`, `POSTGRES_PORT`, …).
+Update the matching application settings when changing service credentials or ports. Data lives in named volumes;
 `docker compose down -v` wipes it.
 
 On startup the app applies migrations, validates every entity against the schema (`ddl-auto: validate`), and
@@ -65,46 +66,95 @@ creates the `krob-krong` bucket if it is missing.
 
 ## Project layout
 
-```
-src/main/java/io/sala/krob_krong
-├── common/                 shared building blocks (no business rules)
-│   ├── annotations/        @RequestId, @TraceId
-│   ├── errors/             ErrorCode, CommonErrorCode, ApiError, ErrorCategory
-│   ├── exceptions/         KrobKrongException, BusinessException, ExceptionMapper + built-in mappers,
-│   │                       GlobalExceptionHandler
-│   ├── filters/ trace/     request/response logging filter, MDC filter, trace argument resolver
-│   ├── log/ config/        MaskedLogger, MaskingConfig
-│   ├── request/ response/  PageRequest, ApiResponse, PageResponse, PageMeta
-│   └── utils/              JsonMasker, XmlMasker, TraceContext, s3/ (S3Util, ETags)
-├── iam/                    identity and access only
-│   ├── account/            users, refresh tokens
-│   ├── rbac/               roles, permissions, grants (controllers, services, specifications)
-│   ├── security/           JWT, @RequirePermission, policy evaluation, error handlers, actor binding
-│   ├── audit/              audit events, access log
-│   ├── support/            time-boxed support sessions
-│   └── error/              IAMErrorCode
-├── school/                 schools and school reviews
-├── branch/                 branches, workspaces, reserved slugs
-└── media/                  media assets and renditions
+This is one Gradle application. Feature packages sit directly under `io.sala.krob_krong`;
+`account`, `audit`, and `support` are siblings of `iam`.
 
-src/main/resources
-├── application.yaml
-└── db/migration/           Flyway migrations, one file per responsibility
+```text
+krob-krong/
+├── build.gradle                       dependencies, Java toolchain, formatting and test tasks
+├── settings.gradle                    Gradle project name
+├── gradlew / gradlew.bat               Gradle wrapper launchers
+├── gradle/wrapper/                     pinned Gradle distribution
+├── docker-compose.yaml                PostgreSQL, RustFS, Valkey and Mailpit
+├── bruno/                             API collection, request folders and environments/Local.yml
+├── docs/onboarding.md                  lifecycle, SMTP setup, image uploads and integration checks
+├── src/main/java/io/sala/krob_krong/    application and feature packages (below)
+├── src/main/resources/
+│   ├── application.yaml               application configuration
+│   └── db/migration/                  Flyway SQL migrations
+└── src/test/java/io/sala/krob_krong/    unit, MVC slice and opt-in integration tests
 ```
 
-Each domain module follows the same internal layout:
+```text
+src/main/java/io/sala/krob_krong/
+├── KrobKrongApplication.java
+├── account/                  signup/login, refresh sessions and SMTP email verification
+│   ├── controller/ dto/ entity/ repository/ specification/
+│   ├── service/impl/         authentication, session and verification services
+│   └── web/                  account constraint exception mapping
+├── audit/                    access logs and audit events
+│   ├── entity/ repository/ specification/
+│   └── service/impl/         access-log recording
+├── branch/                   branch profiles, opening, workspace claims and resolution
+│   ├── controller/ dto/ entity/ mapper/ repository/ specification/
+│   └── service/impl/
+├── common/                   shared infrastructure
+│   ├── annotations/          @RequestId, @TraceId
+│   ├── errors/               ErrorCode, CommonErrorCode, ApiError, ErrorCategory
+│   ├── exceptions/           application exceptions, translators and GlobalExceptionHandler
+│   ├── filters/              request/response logging and bounded body capture
+│   ├── log/                  MaskedLogger
+│   ├── properties/           MaskingConfig
+│   ├── request/              PageRequest
+│   ├── response/             ApiResponse, ApiResponseStatusAdvice, PageResponse, PageMeta
+│   ├── trace/                MDC filter and trace argument resolver
+│   └── utils/                JSON/XML masking, TraceContext and s3/ storage utilities
+├── iam/                      roles, permissions, membership grants and security infrastructure
+│   ├── controller/ dto/ entity/ mapper/ repository/ specification/
+│   ├── error/                IAMErrorCode (also used by account and onboarding services)
+│   ├── service/impl/         permission, role and user-role services
+│   └── security/
+│       ├── config/           security, JWT, password, CORS and actor propagation configuration
+│       ├── dto/              access-token, refresh issuance and session-claim models
+│       ├── impl/             token issuance and access-policy implementations
+│       ├── jwt/              principal conversion and active-session validation
+│       ├── persistence/      actor-aware transaction manager and actor-binding dialect
+│       ├── policy/           role catalog and access/grant evaluation
+│       └── web/              authentication and access-denied handlers/mappers
+├── media/                    logo/cover processing, storage and authorized image delivery
+│   ├── controller/ dto/ entity/ repository/ specification/
+│   └── service/impl/         image orchestration and transactional processing store
+├── school/                   profiles, onboarding checklist, reviews and lifecycle transitions
+│   ├── controller/ dto/ entity/ mapper/ repository/ specification/
+│   └── service/impl/         school lifecycle service; SchoolAccess lives in service/
+└── support/                  time-limited support-access persistence
+    └── entity/ repository/ specification/
+```
 
-```
-<module>/
-├── controller/        @RestController, thin: binds input, calls one service method
-├── service/           interfaces
-│   └── impl/          implementations (@Service)
-├── repository/        JpaRepository + JpaSpecificationExecutor
-├── specification/     static Specification factories
-├── entity/            JPA entities (@FieldNameConstants)
-├── dto/               request/response classes
-└── mapper/            MapStruct mappers (componentModel = "spring")
-```
+Grouped directory names on one line are sibling packages. `service/` contains interfaces and focused helpers;
+`service/impl/` contains their implementations. Modules include only the layers they currently use:
+`support` has no controller or service, `audit` has no public controller, and `account` and `media` have no
+MapStruct mapper package.
+
+| Feature | Entry points |
+|---|---|
+| Account and email verification | [AuthController](src/main/java/io/sala/krob_krong/account/controller/AuthController.java), [EmailVerificationController](src/main/java/io/sala/krob_krong/account/controller/EmailVerificationController.java) |
+| Roles, permissions and invitations | [IAM controllers](src/main/java/io/sala/krob_krong/iam/controller), [IAM services](src/main/java/io/sala/krob_krong/iam/service) |
+| School onboarding and review | [SchoolController](src/main/java/io/sala/krob_krong/school/controller/SchoolController.java), [SchoolServiceImpl](src/main/java/io/sala/krob_krong/school/service/impl/SchoolServiceImpl.java) |
+| Branches and workspaces | [BranchController](src/main/java/io/sala/krob_krong/branch/controller/BranchController.java), [BranchServiceImpl](src/main/java/io/sala/krob_krong/branch/service/impl/BranchServiceImpl.java) |
+| Logo and cover uploads | [SchoolImageController](src/main/java/io/sala/krob_krong/media/controller/SchoolImageController.java), [media services](src/main/java/io/sala/krob_krong/media/service) |
+| Shared HTTP responses | [ApiResponse](src/main/java/io/sala/krob_krong/common/response/ApiResponse.java), [ApiResponseStatusAdvice](src/main/java/io/sala/krob_krong/common/response/ApiResponseStatusAdvice.java) |
+| Access logging | [AccessLogService](src/main/java/io/sala/krob_krong/audit/service/AccessLogService.java) |
+| Support sessions | [SupportAccessEntity](src/main/java/io/sala/krob_krong/support/entity/SupportAccessEntity.java) |
+
+Within a feature, controllers bind and validate input, service interfaces define operations, and implementations
+coordinate authorization and transactions. Repositories provide persistence; specifications compose queries;
+entities map database tables; DTOs define the API contract. Where present, MapStruct mappers convert entities
+to DTOs with `componentModel = "spring"`.
+
+The existing authentication tests still live under `src/test/java/io/sala/krob_krong/iam/account/`, and the
+membership controller tests under `iam/rbac/`. Those test paths retain the earlier layout; production imports
+use `account.*` and `iam.*`. School and image tests live under `school/` and `media/` respectively.
 
 ## Conventions
 
@@ -124,7 +174,7 @@ existing Bruno environment. Bruno's own YAML settings and scripting methods reta
 **Service interface + implementation.** Controllers and other modules depend on the interface
 (`UserRoleService`), never the implementation (`UserRoleServiceImpl`).
 
-**Queries are Specifications.** Repositories extend `JpaSpecificationExecutor`; filters are composable static
+**Query filters use Specifications.** Repositories extend `JpaSpecificationExecutor`; filters are composable static
 factories built on `@FieldNameConstants`, so a renamed field breaks compilation instead of a query:
 
 ```java
@@ -135,6 +185,9 @@ List<UserRoleEntity> grants = userRoleRepository.findAll(
                 .and(UserRoleSpecification.fetchRole()),       // join-fetch instead of lazy loading
         Sort.by(Sort.Direction.DESC, UserRoleEntity.Fields.grantedAt));
 ```
+
+Explicit locking queries handle concurrent writes in account and school repositories. Workspace resolution
+calls the database's `resolve_workspace` function through `JdbcClient` in `BranchServiceImpl`.
 
 **Transactions only where needed.** Put `@Transactional` on the individual method that needs atomicity — a
 read-modify-write like `acceptInvitation`, or several writes that must succeed together. Never annotate a whole
@@ -150,10 +203,12 @@ fails the build if you do. A transaction holds a pool connection from method ent
 
 ## Security and authorization
 
-The API is a stateless OAuth2 resource server. Every request except `POST /api/auth/register`,
-`POST /api/auth/login`, `POST /api/auth/refresh`, `/error`,
-`/actuator/health` and `/actuator/info` needs `Authorization: Bearer <access token>`. Other actuator endpoints
-are denied. Responses carry a strict CSP, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and HSTS (on
+The API is a stateless OAuth2 resource server configured in
+[SecurityConfig](src/main/java/io/sala/krob_krong/iam/security/config/SecurityConfig.java).
+Registration, login, refresh and email confirmation are public. Workspace resolution and reads of approved
+school profiles/branding also allow anonymous callers, subject to the school lifecycle and access policy.
+`/error`, `/actuator/health` (including subpaths) and `/actuator/info` are public; other actuator endpoints
+are denied. Other API operations require `Authorization: Bearer <access token>`. Responses carry a strict CSP, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and HSTS (on
 HTTPS); CORS allows only the origins in `krob-krong.security.cors.allowed-origins`.
 
 Authentication answers *who*; tokens carry identity only. Authorization answers *what*, per request, from the
@@ -172,7 +227,7 @@ public ApiResponse<PageResponse<MemberResponse>> listMembers(@PathVariable("scho
 @RequirePermission(value = "member:read", school = "#schoolId", target = "#userId")
 public ApiResponse<List<UserRoleResponse>> listUserRoles(@PathVariable("school_id") UUID schoolId, @PathVariable("user_id") UUID userId) { … }
 
-@PostMapping("/schools/{school_id}/review")
+@PostMapping("/admin/schools/{school_id}/review")
 @RequirePermission("school:review")          // a platform permission: no school needed
 public ApiResponse<…> review(…) { … }
 ```
@@ -358,7 +413,8 @@ return ApiResponse.paginated(PageResponse.from(page));  // Spring Data Page<T> �
 }
 ```
 
-`ApiResponse.create(...)` returns `ApiResponse<T>`, like `success(...)`. `ApiResponseStatusAdvice` applies
+`ApiResponse.create(...)` returns `ApiResponse<T>`, like `success(...)`.
+[ApiResponseStatusAdvice](src/main/java/io/sala/krob_krong/common/response/ApiResponseStatusAdvice.java) applies
 HTTP 201 from internal metadata that is excluded from JSON; no controller status annotation is needed.
 
 Accept paging with a [PageRequest](src/main/java/io/sala/krob_krong/common/request/PageRequest.java) parameter
@@ -496,6 +552,7 @@ log.info("Headers: {}", log.maskHeaders(headers));
 log.info("Body: {}", log.maskBody(body, contentType));   // JSON, XML, or truncated text
 ```
 
+[MaskingConfig](src/main/java/io/sala/krob_krong/common/properties/MaskingConfig.java) lives in `common/properties`.
 The underlying [JsonMasker](src/main/java/io/sala/krob_krong/common/utils/JsonMasker.java) and
 [XmlMasker](src/main/java/io/sala/krob_krong/common/utils/XmlMasker.java) can be used directly:
 `JsonMasker.mask(json, MaskingConfig.defaults())`. The defaults mask `password`, `token`, `secret`,
@@ -535,8 +592,10 @@ Add changes as new files (`V1_0_13__WHAT_IT_DOES.sql`, …); never edit a migrat
 Entities must match the schema exactly — startup fails otherwise.
 
 **Who did it.** Write guards and the audit trail read the acting user from `app.actor_id`. The transaction manager
-sets it automatically at the start of every write transaction from the authenticated user
-([ActorBindingJpaDialect](src/main/java/io/sala/krob_krong/iam/security/persistence/ActorBindingJpaDialect.java)),
+is wired by [ActorPropagationConfig](src/main/java/io/sala/krob_krong/iam/security/config/ActorPropagationConfig.java)
+to use [ActorAwareJpaTransactionManager](src/main/java/io/sala/krob_krong/iam/security/persistence/ActorAwareJpaTransactionManager.java).
+Its [ActorBindingJpaDialect](src/main/java/io/sala/krob_krong/iam/security/persistence/ActorBindingJpaDialect.java)
+sets the actor at the start of each authenticated write transaction,
 so guarded tables can only be written by an authenticated request (or code that runs with one). Guard errors come
 back as API errors through `SqlStateExceptionMapper`.
 
@@ -594,9 +653,9 @@ tokens as in-memory runtime variables for subsequent requests; **Refresh token**
 ## Testing
 
 ```bash
-docker compose up -d --wait     # the context test connects to PostgreSQL
-./gradlew test                  # unit, slice and context tests
+./gradlew test                  # unit and MVC slice tests; live integration suites are opt-in
 ./gradlew build                 # tests + spotlessCheck
+docker compose up -d --wait     # start services before opting into live integration tests
 S3_IT=true ./gradlew test --tests '*S3UtilRustfsIT'   # live S3 tests against RustFS
 # Create a disposable PostgreSQL database first; the auth suite migrates it and leaves test records.
 AUTH_IT=true AUTH_TEST_DB_URL=jdbc:postgresql://localhost:5432/krob_krong_auth_test \
@@ -629,19 +688,23 @@ Patterns worth copying:
 
 ## Recipe: a new protected endpoint
 
-Say branch admins should list a branch's workspaces.
+Example extension: let authorized callers list a branch's current workspace. Add its classes within the
+existing `branch` feature; the endpoint below is an example, not a currently registered route.
 
 1. **Permission** — if a fitting one doesn't exist, add it in a migration (`permission` + `role_permission`).
-2. **Specification** — `WorkspaceSpecification.byBranchId(branchId).and(WorkspaceSpecification.current())`.
-3. **Service** — `WorkspaceService.listForBranch(...)` interface + `WorkspaceServiceImpl`; no `@Transactional`
-   for a single read; map entities to DTOs with a MapStruct mapper.
-4. **Controller**:
+2. **Specification** — reuse `branch/specification/WorkspaceSpecification.currentForBranch(branchId)` and
+   constrain it to `schoolId`. Verify that the branch belongs to that school before returning data.
+3. **Service** — add the operation to `branch/service/BranchService` and implement it in
+   `branch/service/impl/BranchServiceImpl`. Use `branch/repository/WorkspaceRepository` and the existing
+   `BranchMapper.toWorkspace(...)`; a single read usually needs no explicit `@Transactional`.
+4. **Controller** — add the handler to `branch/controller/BranchController` (the example assumes a
+   `BranchService branchService` field):
 
    ```java
    @GetMapping("/schools/{school_id}/branches/{branch_id}/workspaces")
    @RequirePermission(value = "branch:read", school = "#schoolId", branch = "#branchId")
    public ApiResponse<List<WorkspaceResponse>> list(@PathVariable("school_id") UUID schoolId, @PathVariable("branch_id") UUID branchId) {
-       return ApiResponse.success(workspaceService.listForBranch(schoolId, branchId));
+       return ApiResponse.success(branchService.listWorkspaces(schoolId, branchId));
    }
    ```
 
