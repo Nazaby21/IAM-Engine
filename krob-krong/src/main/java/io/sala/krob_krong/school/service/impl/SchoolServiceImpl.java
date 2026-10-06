@@ -1,5 +1,6 @@
 package io.sala.krob_krong.school.service.impl;
 
+import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.branch.dto.BranchResponse;
 import io.sala.krob_krong.branch.entity.BranchEntity;
@@ -11,6 +12,7 @@ import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.repository.UserRoleRepository;
+import io.sala.krob_krong.iam.security.AccessPolicyService;
 import io.sala.krob_krong.iam.security.Principals;
 import io.sala.krob_krong.iam.specification.UserRoleSpecification;
 import io.sala.krob_krong.media.repository.MediaAssetRepository;
@@ -39,7 +41,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final WorkspaceRepository workspaces;
     private final MediaAssetRepository media;
     private final SchoolAccess access;
-    private final io.sala.krob_krong.iam.security.AccessPolicyService policy;
+    private final AccessPolicyService policy;
     private final SchoolMapper mapper;
     private final BranchMapper branchMapper;
     private final EntityManager em;
@@ -48,7 +50,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     public SchoolResponse register(SchoolProfileRequest request) {
         UUID actor = SchoolAccess.actor();
-        var user = users.findByIdForUpdate(actor).orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
+        UserEntity user = users.findByIdForUpdate(actor).orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
         if (!user.isPerson() || !user.isActive() || !user.isVerified())
             throw new BusinessException(IAMErrorCode.EMAIL_VERIFICATION_REQUIRED);
         SchoolEntity school = new SchoolEntity();
@@ -221,8 +223,8 @@ public class SchoolServiceImpl implements SchoolService {
 
     private List<String> missing(SchoolEntity school, BranchEntity branch) {
         List<String> missing = new ArrayList<>();
-        if (!readyImage(school.getId(), school.getLogoAssetId(), "school_logo")) missing.add("logo_asset_id");
-        if (!readyImage(school.getId(), school.getCoverAssetId(), "school_cover")) missing.add("cover_asset_id");
+        if (readyImage(school.getId(), school.getLogoAssetId(), "school_logo")) missing.add("logo_asset_id");
+        if (readyImage(school.getId(), school.getCoverAssetId(), "school_cover")) missing.add("cover_asset_id");
         if (branch == null) missing.add("default_branch");
         else {
             if (SchoolAccess.clean(branch.getAddressLine()) == null) missing.add("default_branch.address_line");
@@ -235,10 +237,10 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private boolean readyImage(UUID schoolId, UUID id, String purpose) {
-        return id != null
-                && media.findById(id)
-                        .filter(a -> a.isReady() && schoolId.equals(a.getSchoolId()) && purpose.equals(a.getPurpose()))
-                        .isPresent();
+        return id == null
+                || media.findById(id)
+                .filter(a -> a.isReady() && schoolId.equals(a.getSchoolId()) && purpose.equals(a.getPurpose()))
+                .isEmpty();
     }
 
     private SchoolResponse save(SchoolEntity school) {

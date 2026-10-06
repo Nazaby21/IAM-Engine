@@ -1,12 +1,14 @@
 package io.sala.krob_krong.account.service.impl;
 
 import io.sala.krob_krong.account.dto.AuthResponse;
+import io.sala.krob_krong.account.entity.RefreshTokenEntity;
 import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.account.service.AuthSessionService;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
+import io.sala.krob_krong.iam.security.dto.AccessToken;
 import io.sala.krob_krong.iam.security.dto.IssuedRefresh;
 import io.sala.krob_krong.iam.security.dto.SessionClaims;
 import java.util.UUID;
@@ -41,12 +43,12 @@ public class AuthSessionServiceImpl implements AuthSessionService {
         // All refreshes for this user serialize before reading token state or inserting a successor.
         // Reuse revocation can commit independently: no refresh-token rows have been changed or locked yet.
         UserEntity user = lockUser(userId);
-        var previous = tokens.requireActive(raw);
+        RefreshTokenEntity previous = tokens.requireActive(raw);
         if (!userId.equals(previous.getUserId())) {
             throw new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN);
         }
         requireNormalUser(user);
-        var next = tokens.issueRefreshToken(userId, previous.getFamilyId(), userAgent, ip);
+        IssuedRefresh next = tokens.issueRefreshToken(userId, previous.getFamilyId(), userAgent, ip);
         AuthResponse response = issue(user, next);
         tokens.markRotated(previous, next.getEntity().getId());
         return response;
@@ -70,7 +72,7 @@ public class AuthSessionServiceImpl implements AuthSessionService {
     }
 
     private AuthResponse issue(UserEntity user, IssuedRefresh refresh) {
-        var access = tokens.issueAccessToken(SessionClaims.builder()
+        AccessToken access = tokens.issueAccessToken(SessionClaims.builder()
                 .userId(user.getId())
                 .sessionId(refresh.getEntity().getFamilyId())
                 .kind("person")

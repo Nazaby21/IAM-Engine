@@ -56,7 +56,7 @@ public class ActiveSessionValidator implements OAuth2TokenValidator<Jwt> {
         }
         try {
             return UUID.fromString(value);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return null;
         }
     }

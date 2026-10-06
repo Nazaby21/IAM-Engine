@@ -9,7 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.*;
 import java.util.*;
+
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,7 +29,7 @@ public class EmailVerificationStoreImpl implements EmailVerificationStore {
     @Override
     @Transactional
     public Pending prepare(UUID userId) {
-        var user =
+        UserEntity user =
                 users.findByIdForUpdate(userId).orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
         if (!user.isPerson() || !user.isActive() || user.getEmail() == null)
             throw new BusinessException(IAMErrorCode.INVALID_CREDENTIALS);
@@ -34,7 +37,7 @@ public class EmailVerificationStoreImpl implements EmailVerificationStore {
         Instant now = Instant.now();
         Specification<EmailVerificationTokenEntity> owned =
                 (root, q, cb) -> cb.equal(root.get(EmailVerificationTokenEntity.Fields.userId), userId);
-        var recent = tokens.findAll(
+        Page<EmailVerificationTokenEntity> recent = tokens.findAll(
                 owned,
                 PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, EmailVerificationTokenEntity.Fields.createdAt)));
         if (recent.hasContent()
@@ -45,7 +48,7 @@ public class EmailVerificationStoreImpl implements EmailVerificationStore {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         String raw = HexFormat.of().formatHex(bytes);
-        var token = new EmailVerificationTokenEntity();
+        EmailVerificationTokenEntity token = new EmailVerificationTokenEntity();
         token.setUserId(userId);
         token.setEmail(user.getEmail());
         token.setTokenHash(hash(raw));
@@ -67,8 +70,8 @@ public class EmailVerificationStoreImpl implements EmailVerificationStore {
         if (raw == null || !raw.matches("[0-9a-f]{64}")) throw invalid();
         Specification<EmailVerificationTokenEntity> byHash =
                 (root, q, cb) -> cb.equal(root.get(EmailVerificationTokenEntity.Fields.tokenHash), hash(raw));
-        var token = tokens.findOne(byHash).orElseThrow(EmailVerificationStoreImpl::invalid);
-        var user = users.findByIdForUpdate(token.getUserId()).orElseThrow(EmailVerificationStoreImpl::invalid);
+        EmailVerificationTokenEntity token = tokens.findOne(byHash).orElseThrow(EmailVerificationStoreImpl::invalid);
+        UserEntity user = users.findByIdForUpdate(token.getUserId()).orElseThrow(EmailVerificationStoreImpl::invalid);
         // Refresh after obtaining the user lock so concurrent confirmations cannot reuse a cached token.
         refreshToken(token);
         if (token.getConsumedAt() != null
@@ -82,7 +85,7 @@ public class EmailVerificationStoreImpl implements EmailVerificationStore {
         tokens.save(token);
     }
 
-    private final jakarta.persistence.EntityManager em;
+    private final EntityManager em;
 
     private void refreshToken(EmailVerificationTokenEntity token) {
         em.refresh(token);

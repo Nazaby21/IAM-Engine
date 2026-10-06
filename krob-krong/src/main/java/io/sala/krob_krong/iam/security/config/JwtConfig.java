@@ -48,8 +48,8 @@ public class JwtConfig {
                 new JwtIssuerValidator(props.getIssuer()),
                 new JwtAudienceValidator(props.getAudience()),
                 new JwtTypeValidator(TokenClaims.ACCESS_TOKEN_TYPE),
-                new JwtClaimValidator<String>(JwtClaimNames.SUB, JwtConfig::isUuid),
-                new JwtClaimValidator<String>(TokenClaims.SESSION_ID, JwtConfig::isUuid),
+                new JwtClaimValidator<>(JwtClaimNames.SUB, JwtConfig::isUuid),
+                new JwtClaimValidator<>(TokenClaims.SESSION_ID, JwtConfig::isUuid),
                 new JwtClaimValidator<String>(
                         TokenClaims.KIND,
                         kind -> AuthenticatedUser.KIND_PERSON.equals(kind)
@@ -69,7 +69,7 @@ public class JwtConfig {
         try {
             UUID.fromString(value);
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return false;
         }
     }

@@ -28,7 +28,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     // RFC 6750 §3: error code only; the description could echo token parsing details.
     private static String wwwAuthenticate(AuthenticationException ex) {
-        if (ex instanceof OAuth2AuthenticationException oauth2 && oauth2.getError() != null) {
+        if (ex instanceof OAuth2AuthenticationException oauth2) {
             return "Bearer error=\"" + oauth2.getError().getErrorCode() + "\"";
         }
         return "Bearer";

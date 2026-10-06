@@ -31,8 +31,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     @Override
     public VerificationResponse request() {
-        var pending = store.prepare(SchoolAccess.actor());
-        var message = new SimpleMailMessage();
+        EmailVerificationStore.Pending pending = store.prepare(SchoolAccess.actor());
+        SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(pending.getEmail());
         message.setSubject("Verify your Krob Krong email");
