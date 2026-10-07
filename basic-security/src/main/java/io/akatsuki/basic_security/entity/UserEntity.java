@@ -35,4 +35,10 @@ public class UserEntity {
 
     @Column(name = "gender")
     private String gender;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "school")
+    private String school;
 }

@@ -38,9 +38,9 @@ acm:
     master:
       host: localhost
       port: 5432
-      database: basic-security
+      database: spring_security
       username: postgres
-      password: supersecret
+      password: Kimla110803
     flyway:
       enabled: true
       locations:
@@ -48,7 +48,7 @@ acm:
 
   observability:
     enabled: true
-    service-name: sensei
+    service-name: spring-security
 
     health:
       enabled: true

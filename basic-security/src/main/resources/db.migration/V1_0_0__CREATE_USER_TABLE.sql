@@ -3,5 +3,7 @@ create table users (
     email varchar(250) not null,
     name varchar(250) not null,
     password varchar(250) not null,
-    gender varchar(250) not null
+    gender varchar(250) not null,
+    age integer not null,
+    school varchar(250) not null
 );
