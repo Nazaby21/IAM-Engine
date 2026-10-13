@@ -50,7 +50,8 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     public SchoolResponse register(SchoolProfileRequest request) {
         UUID actor = SchoolAccess.actor();
-        UserEntity user = users.findByIdForUpdate(actor).orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
+        UserEntity user =
+                users.findByIdForUpdate(actor).orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
         if (!user.isPerson() || !user.isActive() || !user.isVerified())
             throw new BusinessException(IAMErrorCode.EMAIL_VERIFICATION_REQUIRED);
         SchoolEntity school = new SchoolEntity();
@@ -239,8 +240,8 @@ public class SchoolServiceImpl implements SchoolService {
     private boolean readyImage(UUID schoolId, UUID id, String purpose) {
         return id == null
                 || media.findById(id)
-                .filter(a -> a.isReady() && schoolId.equals(a.getSchoolId()) && purpose.equals(a.getPurpose()))
-                .isEmpty();
+                        .filter(a -> a.isReady() && schoolId.equals(a.getSchoolId()) && purpose.equals(a.getPurpose()))
+                        .isEmpty();
     }
 
     private SchoolResponse save(SchoolEntity school) {
