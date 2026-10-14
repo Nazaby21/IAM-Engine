@@ -30,6 +30,7 @@ public enum IAMErrorCode implements ErrorCode {
     WORKSPACE_NOT_FOUND(404, "Workspace not found"),
 
     USER_NOT_FOUND(404, "User not found"),
+    STUDENT_NOT_FOUND(404, "Student not found"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),

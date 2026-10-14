@@ -30,14 +30,18 @@ public class AttendanceEntity {
     @Column(name = "enrollment_id")
     private UUID enrollmentId;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @Column(name = "student_id")
+    private UUID studentId;
 
+    @CreationTimestamp
     @Column(name = "date")
     private LocalDate date;
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "reason")
+    private String reason;
 
     @Column(name = "created_by")
     private UUID createdBy;
