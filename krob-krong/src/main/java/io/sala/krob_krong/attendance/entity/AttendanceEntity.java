@@ -6,13 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
-
-import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
@@ -23,22 +23,33 @@ public class AttendanceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     @Column(name = "schedule_id")
     private String scheduleId;
+
     @Column(name = "enrollment_id")
     private String enrollmentId;
+
     @Column(name = "user_id")
     private String userId;
+
     @Column(name = "date")
-    private Date date;
+    private LocalDate date;
+
     @Column(name = "status")
     private String status;
+
     @Column(name = "created_by")
     private UUID createdBy;
+
+    @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
+
     @Column(name = "updated_by")
     private UUID updatedBy;
+
+    @CreationTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
 }

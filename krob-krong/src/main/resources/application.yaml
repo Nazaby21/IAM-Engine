@@ -24,8 +24,8 @@ spring:
       enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/krob_krong
-    username: postgres
-    password: supersecret
+    username: ${postgres.datasource.username}
+    password: ${postgres.datasource.password}
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: KrobKrongHikariPool

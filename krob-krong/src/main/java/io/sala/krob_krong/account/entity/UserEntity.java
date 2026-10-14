@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +25,21 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "gender", nullable = false)
+    private String gender;
+
+    @Column(name = "dob", nullable = false)
+    private LocalDate dob;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(nullable = false)
     private String kind = "person";
 
@@ -36,6 +52,12 @@ public class UserEntity {
 
     @Column(name = "display_name", nullable = false)
     private String displayName;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
+
+    @Column(name = "role_id")
+    private UUID roleId;
 
     @Column(name = "avatar_asset_id")
     private UUID avatarAssetId;
@@ -52,6 +74,16 @@ public class UserEntity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private UUID createdBy;
+
+    @CreationTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    @Column(name = "updated_by")
+    private UUID updatedBy;
 
     public boolean isPerson() {
         return "person".equals(kind);
