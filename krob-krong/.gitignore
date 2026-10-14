@@ -37,4 +37,4 @@ out/
 .vscode/
 
 ### application ###
-resources/application-local.yaml
+krob-krong/src/main/resources/application-local.yaml
