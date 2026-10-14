@@ -31,7 +31,7 @@ public class ScoreEntity {
     private UUID studentId;
 
     @Column(name = "score")
-    private int score;
+    private Integer score;
 
     @Column(name = "grade")
     private String grade;

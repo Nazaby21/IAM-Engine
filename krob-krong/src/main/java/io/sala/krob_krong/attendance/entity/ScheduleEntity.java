@@ -28,8 +28,8 @@ public class ScheduleEntity {
     @Column(name = "class_group_id")
     private UUID classGroupId;
 
-    @Column(name = "classroom")
-    private UUID classroom;
+    @Column(name = "classroom_id")
+    private UUID classroomId;
 
     @Column(name = "day_of_week")
     private String dayOfWeek;

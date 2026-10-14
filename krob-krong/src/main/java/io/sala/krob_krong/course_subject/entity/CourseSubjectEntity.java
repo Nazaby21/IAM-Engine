@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
@@ -26,7 +28,7 @@ public class CourseSubjectEntity {
     private String code;
 
     @Column(name = "price")
-    private Double price;
+    private BigDecimal price;
 
     @Column(name = "price_type")
     private String priceType;
@@ -34,11 +36,11 @@ public class CourseSubjectEntity {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "started_date")
-    private Instant startedDate;
+    @Column(name = "started_at")
+    private Instant startedAt;
 
-    @Column(name = "ended_date")
-    private Instant endedDate;
+    @Column(name = "ended_at")
+    private Instant endedAt;
 
     @Column(name = "currency")
     private String currency;

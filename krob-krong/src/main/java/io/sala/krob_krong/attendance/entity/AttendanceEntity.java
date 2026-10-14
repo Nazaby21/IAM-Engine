@@ -18,20 +18,20 @@ import org.hibernate.annotations.CreationTimestamp;
 @Setter
 @Entity
 @FieldNameConstants
-@Table(name = "attendances")
+@Table(name = "attendance")
 public class AttendanceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "schedule_id")
-    private String scheduleId;
+    private UUID scheduleId;
 
     @Column(name = "enrollment_id")
-    private String enrollmentId;
+    private UUID enrollmentId;
 
     @Column(name = "user_id")
-    private String userId;
+    private UUID userId;
 
     @Column(name = "date")
     private LocalDate date;

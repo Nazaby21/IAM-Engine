@@ -36,7 +36,7 @@ public class ClassroomEntity {
     private String floor;
 
     @Column(name = "capacity")
-    private String capacity;
+    private Integer capacity;
 
     @Column(name = "class_type", length = 30)
     private String classType;

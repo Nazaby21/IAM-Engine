@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
@@ -22,7 +24,7 @@ public class SubjectEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Column(name = "branch_id")
     private UUID branchId;
@@ -31,7 +33,7 @@ public class SubjectEntity {
     private String name;
 
     @Column(name = "credit")
-    private String credit;
+    private BigDecimal credit;
 
     @Column(name = "status")
     private String status;
