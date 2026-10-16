@@ -9,11 +9,16 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+@Builder
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -30,18 +35,14 @@ public class AttendanceEntity {
     @Column(name = "enrollment_id")
     private UUID enrollmentId;
 
-    @Column(name = "student_id")
-    private UUID studentId;
-
-    @CreationTimestamp
-    @Column(name = "date")
-    private LocalDate date;
-
     @Column(name = "status")
     private String status;
 
     @Column(name = "reason")
     private String reason;
+
+    @Column(name = "attendance_date")
+    private LocalDate attendanceDate;
 
     @Column(name = "created_by")
     private UUID createdBy;
@@ -53,7 +54,7 @@ public class AttendanceEntity {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
 }

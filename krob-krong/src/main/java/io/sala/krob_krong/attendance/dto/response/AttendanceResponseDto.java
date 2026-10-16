@@ -1,17 +1,15 @@
 package io.sala.krob_krong.attendance.dto.response;
 
 import io.sala.krob_krong.common.enumz.AttendanceStatus;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 public class AttendanceResponseDto {
-    private UUID studentId;
+    private UUID enrollmentId;
     private AttendanceStatus status;
-    private LocalDate checkInDate;
     private String reason;
 }
