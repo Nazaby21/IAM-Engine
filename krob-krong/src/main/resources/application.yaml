@@ -47,6 +47,10 @@ spring:
     hibernate:
       ddl-auto: validate
 
+logging:
+  pattern:
+    correlation: "[%X{trace_id:-}] "
+
 krob-krong:
   account:
     verification:

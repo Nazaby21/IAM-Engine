@@ -60,9 +60,7 @@ public class ApiResponse<T> {
     }
 
     private static String traceId() {
-        String v = MDC.get("traceId");
-        if (StringUtils.isNotBlank(v)) return v;
-        v = MDC.get(TraceContext.MDC_TRACE_ID);
+        String v = MDC.get(TraceContext.MDC_TRACE_ID);
         return StringUtils.isNotBlank(v) ? v : null;
     }
 }

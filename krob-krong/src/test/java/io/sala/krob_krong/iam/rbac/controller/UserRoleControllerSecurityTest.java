@@ -97,7 +97,9 @@ class UserRoleControllerSecurityTest {
                 .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.error.category").value("AUTHENTICATION"))
                 .andExpect(jsonPath("$.request_id").isNotEmpty())
-                .andExpect(jsonPath("$.requestId").doesNotExist());
+                .andExpect(jsonPath("$.requestId").doesNotExist())
+                .andExpect(header().exists("X-Trace-ID"))
+                .andExpect(jsonPath("$.trace_id").isNotEmpty());
 
         verifyNoInteractions(userRoleService, accessPolicy);
     }

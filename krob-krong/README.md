@@ -408,7 +408,7 @@ return ApiResponse.paginated(PageResponse.from(page));  // Spring Data Page<T> �
   "data": { "content": [ … ], "meta": { "total_elements": 42, "total_pages": 3, "page": 0, "size": 20, "has_next": true } },
   "error": null,
   "request_id": "7c9e…",
-  "trace_id": null,
+  "trace_id": "4bf9…",
   "timestamp": "2026-10-06T00:25:19.849Z"
 }
 ```
@@ -563,10 +563,13 @@ words. Log only DTOs or masked strings — never entities, tokens or raw request
 
 [TraceContext](src/main/java/io/sala/krob_krong/common/utils/TraceContext.java) defines the headers
 `X-Request-ID`, `X-Trace-ID`, `X-Span-ID` and the MDC keys `request_id`, `trace_id`, `span_id`.
-[MDCFilter](src/main/java/io/sala/krob_krong/common/trace/MDCFilter.java) reads or generates them per request and
-echoes them on the response; `@RequestId String requestId` / `@TraceId String traceId` controller parameters are
-meant to receive them, and `ApiResponse` copies them into every body. **These are not wired up yet** — see
-[Known gaps](#known-gaps); today `request_id` in responses is a fresh random value.
+[MDCFilter](src/main/java/io/sala/krob_krong/common/trace/MDCFilter.java), registered by
+[TraceConfig](src/main/java/io/sala/krob_krong/common/trace/TraceConfig.java), runs before Spring Security on every
+request, including rejected and error-dispatched ones. It takes `X-Request-ID` and `X-Trace-ID` from the caller when
+they are 1–64 characters of `[A-Za-z0-9._-]`, otherwise it generates UUIDs, then puts them in the MDC and on the
+response headers. `ApiResponse` copies both into every body, log lines carry `[trace_id]` through
+`logging.pattern.correlation`, and controllers can take `@RequestId String requestId` / `@TraceId String traceId`
+parameters. Nothing sets `X-Span-ID` or `span_id` yet.
 
 ## Database
 
@@ -585,6 +588,11 @@ responsibility:
 | `V1_0_8__WRITE_GUARDS` | Trigger functions enforcing data rules on writes |
 | `V1_0_9__REFRESH_TOKEN` | `refresh_token` |
 | `V1_0_10__SEED_DATA` | Permissions, roles, scopes, grant rules, reserved slugs |
+| `V1_0_11__USER_PASSWORD` | `app_user.password_hash` |
+| `V1_0_12__SCHOOL_ONBOARDING` | `email_verification_token`, image-processor service account, reviewer read permissions, updated `school_guard` |
+
+The entity-relationship diagram is [docs/erd.eraserdiagram](docs/erd.eraserdiagram) (Eraser diagram-as-code):
+preview it with the Eraser VS Code extension, or paste everything after its first line into an ERD on eraser.io.
 | `V1_0_11__USER_PASSWORD` | Nullable password credential for person accounts; existing users remain unchanged |
 | `V1_0_12__SCHOOL_ONBOARDING` | Email verification tokens, image pipeline service identity, review read permissions and extended review snapshots |
 
@@ -716,9 +724,7 @@ existing `branch` feature; the endpoint below is an example, not a currently reg
 
 - **Authentication follow-ups:** password recovery, MFA challenges, and request throttling
   are not implemented. Existing accounts without a password need a separate credential-provisioning flow.
-- **Tracing and request logging are not wired.** Nothing registers `MDCFilter`, `RequestResponseLogFilter` or
-  `TraceIdMethodArgumentResolver`, and the resolver checks method annotations instead of parameter annotations, so
-  `@RequestId`/`@TraceId` never resolve.
+- **Request logging is not wired.** Nothing registers `RequestResponseLogFilter`.
 - **`mask:` in `application.yaml` is not applied.** `MaskingConfig` is never registered as configuration
   properties, and the yaml's `mask-pattern` key does not match its `fullMask` field; `MaskedLogger.of(...)` uses
   the built-in defaults.
