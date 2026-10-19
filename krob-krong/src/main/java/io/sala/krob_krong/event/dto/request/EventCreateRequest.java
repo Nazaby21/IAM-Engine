@@ -5,12 +5,10 @@ import io.sala.krob_krong.event.constant.EventStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
-public class EventCreateRequestDto {
+public class EventCreateRequest {
 
     @JsonProperty("title")
     @NotBlank(message = "event title cannot be blanked")

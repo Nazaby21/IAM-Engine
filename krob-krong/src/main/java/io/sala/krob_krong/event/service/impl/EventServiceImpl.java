@@ -3,9 +3,9 @@ package io.sala.krob_krong.event.service.impl;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
-import io.sala.krob_krong.event.dto.request.EventCreateRequestDto;
+import io.sala.krob_krong.event.dto.request.EventCreateRequest;
 import io.sala.krob_krong.event.dto.response.CountdownResponse;
-import io.sala.krob_krong.event.dto.response.EventResponseDto;
+import io.sala.krob_krong.event.dto.response.EventResponse;
 import io.sala.krob_krong.event.entity.EventEntity;
 import io.sala.krob_krong.event.mapper.EventMapper;
 import io.sala.krob_krong.event.repository.EventRepository;
@@ -33,7 +33,7 @@ public class EventServiceImpl implements EventService {
     private final EventValidator eventValidator;
 
     @Override
-    public PageResponse<EventResponseDto> listAll(PageRequest page) {
+    public PageResponse<EventResponse> listAll(PageRequest page) {
         return PageResponse.from(
                 eventRepository.findAll(
                         page.toSpring(Sort.by(Sort.Direction.DESC, EventEntity.Fields.createdAt)
@@ -42,13 +42,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventResponseDto listById(UUID id) {
+    public EventResponse listById(UUID id) {
         EventEntity event = eventRepository.findById(id).orElseThrow(()-> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
         return (eventMapper.toResponse(event));
     }
 
     @Override
-    public EventResponseDto create(UUID schoolId, EventCreateRequestDto request) {
+    public EventResponse create(UUID schoolId, EventCreateRequest request) {
         UUID actor = SchoolAccess.actor();
         LocalDate eventDate = request.getEventDate();
         eventValidator.validateEventDate(eventDate);

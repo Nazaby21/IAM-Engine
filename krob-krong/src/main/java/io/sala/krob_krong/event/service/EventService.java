@@ -2,18 +2,18 @@ package io.sala.krob_krong.event.service;
 
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
-import io.sala.krob_krong.event.dto.request.EventCreateRequestDto;
+import io.sala.krob_krong.event.dto.request.EventCreateRequest;
 import io.sala.krob_krong.event.dto.response.CountdownResponse;
-import io.sala.krob_krong.event.dto.response.EventResponseDto;
+import io.sala.krob_krong.event.dto.response.EventResponse;
 import java.util.UUID;
 
 public interface EventService {
 
-    PageResponse<EventResponseDto> listAll(PageRequest page);
+    PageResponse<EventResponse> listAll(PageRequest page);
 
-    EventResponseDto listById(UUID id);
+    EventResponse listById(UUID id);
 
-    EventResponseDto create(UUID schoolId, EventCreateRequestDto request);
+    EventResponse create(UUID schoolId, EventCreateRequest request);
 
     CountdownResponse getCountdown(UUID id);
 }
