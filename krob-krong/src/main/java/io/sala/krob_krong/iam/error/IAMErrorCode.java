@@ -56,7 +56,7 @@ public enum IAMErrorCode implements ErrorCode {
     EVENT_ALREADY_EXIST(400, "This event is already created"),
     EVENT_DATE_CANNOT_BE_PAST(400,"This event cannot be in the past"),
     EVENT_NOT_FOUND (400, "Event not found"),
-    EVENT_DATE_REQUIRED(400, "Event date is required");
+    EVENT_DATE_REQUIRED(400, "Event date is null");
 
     private final int httpStatus;
     private final String defaultMessage;
