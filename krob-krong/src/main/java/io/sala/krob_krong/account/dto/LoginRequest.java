@@ -2,6 +2,7 @@ package io.sala.krob_krong.account.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,4 +18,7 @@ public class LoginRequest {
     @NotBlank
     @Size(max = 128)
     private String password;
+
+    @Pattern(regexp = "^(\\d{6})?$")
+    private String mfaCode;
 }

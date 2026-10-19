@@ -116,6 +116,18 @@ class AuthControllerTest {
     }
 
     @Test
+    void malformedMfaCodeIsRejectedBeforeTheService() throws Exception {
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {"email":"person@example.com","password":"long test passphrase","mfa_code":"12 34"}
+                    """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.details.fields.mfa_code").exists());
+        verifyNoInteractions(auth);
+    }
+
+    @Test
     void malformedJsonDoesNotEchoSecrets() throws Exception {
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

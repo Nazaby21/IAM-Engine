@@ -174,6 +174,30 @@ class UserRoleControllerSecurityTest {
     }
 
     @Test
+    void platformInviteNeedsATokenAndActsAsTheCaller() throws Exception {
+        UUID invitee = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        String body = "{\"user_id\":\"" + invitee + "\",\"role_id\":\"" + roleId + "\"}";
+
+        mvc.perform(post("/api/admin/members/invite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/admin/members/invite")
+                        .with(authentication(authenticated(userId)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated());
+
+        var request = ArgumentCaptor.forClass(GrantRoleRequest.class);
+        verify(userRoleService).grantPlatformRole(request.capture(), eq(userId));
+        org.assertj.core.api.Assertions.assertThat(request.getValue().getUserId())
+                .isEqualTo(invitee);
+        org.assertj.core.api.Assertions.assertThat(request.getValue().getRoleId())
+                .isEqualTo(roleId);
+    }
+
+    @Test
     void snakeCaseQueryParametersReachRoleAndPermissionServices() throws Exception {
         UUID branchId = UUID.randomUUID();
         when(roleService.getGrantableRoles(userId, schoolId, branchId)).thenReturn(List.of());

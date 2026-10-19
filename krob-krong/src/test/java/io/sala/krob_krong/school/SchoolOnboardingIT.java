@@ -99,7 +99,7 @@ class SchoolOnboardingIT {
                             "INSERT INTO user_role(user_id,role_id,source) SELECT ?,id,'bootstrap' FROM role WHERE code='super_admin'")
                     .param(adminId)
                     .update();
-        var refresh = tokens.issueRefreshToken(adminId, null, null, null);
+        var refresh = tokens.issueRefreshToken(adminId, null, true, null, null);
         admin = tokens.issueAccessToken(SessionClaims.builder()
                         .userId(adminId)
                         .sessionId(refresh.getEntity().getFamilyId())
