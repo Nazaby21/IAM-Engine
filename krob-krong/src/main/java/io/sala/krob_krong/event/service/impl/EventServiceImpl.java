@@ -1,7 +1,10 @@
 package io.sala.krob_krong.event.service.impl;
 
 import io.sala.krob_krong.common.exceptions.BusinessException;
+import io.sala.krob_krong.common.request.PageRequest;
+import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.event.dto.request.EventCreateRequestDto;
+import io.sala.krob_krong.event.dto.response.CountdownResponse;
 import io.sala.krob_krong.event.dto.response.EventResponseDto;
 import io.sala.krob_krong.event.entity.EventEntity;
 import io.sala.krob_krong.event.mapper.EventMapper;
@@ -10,12 +13,15 @@ import io.sala.krob_krong.event.service.EventService;
 import io.sala.krob_krong.event.service.validator.EventValidator;
 import io.sala.krob_krong.event.specification.EventSpecz;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
+import io.sala.krob_krong.school.service.SchoolAccess;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -27,13 +33,23 @@ public class EventServiceImpl implements EventService {
     private final EventValidator eventValidator;
 
     @Override
-    public List<EventResponseDto> listAll() {
-        return eventRepository.findAll().stream()
-                .map(eventMapper::toResponse).toList();
+    public PageResponse<EventResponseDto> listAll(PageRequest page) {
+        return PageResponse.from(
+                eventRepository.findAll(
+                        page.toSpring(Sort.by(Sort.Direction.DESC, EventEntity.Fields.createdAt)
+                        )).map(eventMapper::toResponse)
+        );
+    }
+
+    @Override
+    public EventResponseDto listById(UUID id) {
+        EventEntity event = eventRepository.findById(id).orElseThrow(()-> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
+        return (eventMapper.toResponse(event));
     }
 
     @Override
     public EventResponseDto create(UUID schoolId, EventCreateRequestDto request) {
+        UUID actor = SchoolAccess.actor();
         LocalDate eventDate = request.getEventDate();
         eventValidator.validateEventDate(eventDate);
         Specification<EventEntity> specification =
@@ -45,8 +61,24 @@ public class EventServiceImpl implements EventService {
         eventValidator.NotExist(specification);
         EventEntity entity = eventMapper.toEventEntity(request);
         entity.setSchoolId(schoolId);
+        entity.setCreatedBy(actor);
         EventEntity savedEntity = eventRepository.save(entity);
 
         return eventMapper.toResponse(savedEntity);
+    }
+
+    @Override
+    public CountdownResponse getCountdown(UUID id) {
+        EventEntity event=eventRepository.findById(id).orElseThrow(()->new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
+        CountdownResponse response= eventMapper.toCountdown(event);
+        LocalDate today = LocalDate.now();
+        LocalDate eventDate = event.getEventDate();
+        if (ObjectUtils.isEmpty(eventDate)){
+            throw new BusinessException(IAMErrorCode.EVENT_DATE_REQUIRED);
+        }
+        long dayRemaining =  ChronoUnit.DAYS.between(today, eventDate);
+        response.setDaysRemaining(dayRemaining);
+
+        return response;
     }
 }

@@ -20,7 +20,7 @@ public class EventCreateRequestDto {
     private String description;
 
     @JsonProperty("event_date")
-    @NotBlank(message = "event date cannot be blank")
+    @NotNull(message = "event date cannot be blank")
     private LocalDate eventDate;
 
     @JsonProperty("poster_image")
