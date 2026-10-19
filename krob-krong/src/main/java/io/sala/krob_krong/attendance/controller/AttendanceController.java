@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +27,8 @@ public class AttendanceController {
 
     @PostMapping("/branch/{branchId}/schedule/{scheduleId}/attendance")
     public ApiResponse<List<AttendanceResponseDto>> attendanceRecords(
-            @RequestParam UUID branchId,
-            @RequestParam UUID scheduleId,
+            @PathVariable UUID branchId,
+            @PathVariable UUID scheduleId,
             @Valid @RequestBody AttendanceRequestDto request) {
         return ApiResponse.success(attendanceService.recordSessionAttendance(branchId, scheduleId, request));
     }

@@ -1,4 +1,4 @@
-package io.sala.krob_krong.attendance.entity;
+package io.sala.krob_krong.schedule.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
