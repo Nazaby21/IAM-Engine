@@ -60,6 +60,8 @@ krob-krong:
     jwt:
       secret: local-development-signing-key-never-use-in-production
       ttl: 12h
+    mfa:
+      encryption-key: local-development-mfa-key-never-use-in-production
     cors:
       allowed-origins: http://localhost:3000, http://localhost:5173
   storage:

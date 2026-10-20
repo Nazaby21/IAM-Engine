@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class EnrollmentResponse {
     private String id;
-    private String ticketId;
+    private String ticketNumber;
     private String userId;
     private String classGroupId;
     private EnrollmentStatus Status;

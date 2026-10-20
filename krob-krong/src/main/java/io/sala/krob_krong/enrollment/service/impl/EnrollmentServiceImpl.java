@@ -36,7 +36,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         String ticket = ticketService.generate(save.getId());
         EnrollmentResponse response=enrollmentMapper.toResponse(save);
         response.setStatus(EnrollmentStatus.PENDING);
-        response.setTicketId(ticket);
+        response.setTicketNumber(ticket);
         response.setExpiresIn(60);
         return response ;
     }
@@ -44,18 +44,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public EnrollmentResponse exchange(UUID id) {
         EnrollmentEntity entity = enrollmentValidator.findById(id);
-
         if (!EnrollmentStatus.PENDING.name().equals(entity.getStatus())) {
             throw new BusinessException(IAMErrorCode.CANNOT_EXCHANGE);
         }
-
         if (ticketService.exists(id)) {
             throw new BusinessException(IAMErrorCode.TICKET_EXISTING);
         }
-
         String ticketId= ticketService.generate(id);
         EnrollmentResponse response = enrollmentMapper.toResponse(entity);
-        response.setTicketId(ticketId);
+        response.setTicketNumber(ticketId);
         return response;
     }
 }
