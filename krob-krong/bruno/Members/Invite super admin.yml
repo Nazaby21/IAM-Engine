@@ -1,0 +1,40 @@
+info:
+  name: Invite super admin
+  type: http
+  seq: 5
+http:
+  method: POST
+  url: "{{base_url}}/api/admin/members/invite"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "{{user_id}}",
+        "role_id": "{{role_id}}"
+      }
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("user_role_id", res.body.data.id);
+        }
+    - type: tests
+      code: |-
+        test("responds 201", () => expect(res.status).to.equal(201));
+        test("invitation is pending", () => expect(res.body.data.status).to.equal("pending"));
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Invites `user_id` to a platform role such as `super_admin`. Uses `admin_access_token` from
+  *Authentication → Admin login*, so the caller must be a super admin signed in with an authenticator code.
+  Find `role_id` with *Roles → List roles* filtered to `kind=platform`. The invitee must
+  have MFA turned on, then accepts with *My invitations → Accept invitation*. Optional `"valid_to"`.
+  Errors: 403 `MFA_REQUIRED` or `ROLE_GRANT_NOT_ALLOWED`, 400 `ROLE_NOT_GRANTABLE_HERE` for school roles,
+  400 `platform roles require MFA` when the invitee has no MFA, 409 `ROLE_ALREADY_HELD`.

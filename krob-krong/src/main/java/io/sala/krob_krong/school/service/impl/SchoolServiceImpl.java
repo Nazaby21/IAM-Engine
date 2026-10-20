@@ -13,7 +13,7 @@ import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.repository.UserRoleRepository;
 import io.sala.krob_krong.iam.security.AccessPolicyService;
-import io.sala.krob_krong.iam.security.Principals;
+import io.sala.krob_krong.iam.security.MfaSessionGuard;
 import io.sala.krob_krong.iam.specification.UserRoleSpecification;
 import io.sala.krob_krong.media.repository.MediaAssetRepository;
 import io.sala.krob_krong.school.dto.*;
@@ -45,6 +45,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final SchoolMapper mapper;
     private final BranchMapper branchMapper;
     private final EntityManager em;
+    private final MfaSessionGuard mfaSession;
 
     @Override
     @Transactional
@@ -140,7 +141,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public PageResponse<SchoolResponse> directory(String status, PageRequest page) {
         access.check(null, "school.directory:read");
-        requireMfa();
+        mfaSession.require();
         if (status != null
                 && !Set.of("draft", "pending_review", "changes_requested", "approved", "rejected", "suspended")
                         .contains(status)) throw new BusinessException(IAMErrorCode.SCHOOL_STATUS_INVALID);
@@ -170,7 +171,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     public SchoolResponse review(UUID id, ReviewDecisionRequest request) {
         SchoolEntity school = access.lock(id, "school:review");
-        requireMfa();
+        mfaSession.require();
         if (!"pending_review".equals(school.getStatus()))
             throw new BusinessException(IAMErrorCode.SCHOOL_STATUS_INVALID);
         var open = reviews.findOne(SchoolReviewSpecification.pendingForSchool(id))
@@ -195,7 +196,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     public SchoolResponse suspend(UUID id, String reason) {
         SchoolEntity school = access.lock(id, "school:suspend");
-        requireMfa();
+        mfaSession.require();
         if (!"approved".equals(school.getStatus()) || SchoolAccess.clean(reason) == null)
             throw new BusinessException(IAMErrorCode.SCHOOL_STATUS_INVALID);
         school.setStatus("suspended");
@@ -207,19 +208,11 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     public SchoolResponse reinstate(UUID id) {
         SchoolEntity school = access.lock(id, "school:suspend");
-        requireMfa();
+        mfaSession.require();
         if (!"suspended".equals(school.getStatus())) throw new BusinessException(IAMErrorCode.SCHOOL_STATUS_INVALID);
         school.setStatus("approved");
         school.setStatusReason(null);
         return save(school);
-    }
-
-    private void requireMfa() {
-        var principal = Principals.current().orElseThrow(() -> new BusinessException(IAMErrorCode.MFA_REQUIRED));
-        if (!principal.mfaVerified()
-                || users.findById(principal.id())
-                        .filter(u -> u.getMfaEnabledAt() != null)
-                        .isEmpty()) throw new BusinessException(IAMErrorCode.MFA_REQUIRED);
     }
 
     private List<String> missing(SchoolEntity school, BranchEntity branch) {

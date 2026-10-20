@@ -78,7 +78,8 @@ public class TokenServiceImpl implements TokenService {
 
     // ---- Refresh tokens -----------------------------------------------------
     @Override
-    public IssuedRefresh issueRefreshToken(UUID userId, UUID sessionId, String userAgent, String ip) {
+    public IssuedRefresh issueRefreshToken(
+            UUID userId, UUID sessionId, boolean mfaVerified, String userAgent, String ip) {
         String raw = randomToken();
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setUserId(userId);
@@ -87,6 +88,7 @@ public class TokenServiceImpl implements TokenService {
         entity.setExpiresAt(Instant.now().plus(props.getRefreshTtl()));
         entity.setUserAgent(truncate(userAgent));
         entity.setIp(ip);
+        entity.setMfaVerified(mfaVerified);
         refreshTokenRepository.save(entity);
         return IssuedRefresh.builder().rawValue(raw).entity(entity).build();
     }

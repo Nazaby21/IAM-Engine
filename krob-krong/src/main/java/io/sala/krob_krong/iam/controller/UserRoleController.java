@@ -39,6 +39,13 @@ public class UserRoleController {
         return ApiResponse.create(userRoleService.grantRole(schoolId, request, user.id()));
     }
 
+    // Authorized in the service: grant rules plus an MFA-verified session.
+    @PostMapping("/admin/members/invite")
+    public ApiResponse<UserRoleResponse> invitePlatformMember(
+            @Valid @RequestBody GrantRoleRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.create(userRoleService.grantPlatformRole(request, user.id()));
+    }
+
     @GetMapping("/schools/{school_id}/members")
     @RequirePermission(value = "member:read", school = "#schoolId")
     public ApiResponse<PageResponse<MemberResponse>> listMembers(
