@@ -1,7 +1,6 @@
 package io.sala.krob_krong.schedule.dto.response;
 
-import io.sala.krob_krong.schedule.dto.request.CreateScheduleRequestDto;
-import lombok.Data;
+import io.sala.krob_krong.common.enumz.DayOfWeeks;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,12 +14,7 @@ public class ScheduleResponseDto {
     private UUID classGroupId;
     private UUID classroomId;
     private List<DayOfWeeks> dayOfWeek;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private LocalTime startedTime;
+    private LocalTime endedTime;
     private String description;
-
-    @Data
-    public static class DayOfWeeks{
-        private DayOfWeeks dayOfWeek;
-    }
 }

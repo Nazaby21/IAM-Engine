@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UUID> {
@@ -20,7 +21,10 @@ public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UU
             )
             """, nativeQuery = true)
     boolean existsAttendance(
-            @Param("scheduleId") UUID scheduleId,
-            @Param("enrollmentIds") List<UUID> enrollmentIds,
+            @PathVariable("scheduleId") UUID scheduleId,
+            @PathVariable("enrollmentIds") List<UUID> enrollmentIds,
             LocalDate attendanceDate);
+
+
+
 }

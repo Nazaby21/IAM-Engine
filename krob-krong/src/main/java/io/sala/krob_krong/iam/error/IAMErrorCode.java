@@ -33,6 +33,7 @@ public enum IAMErrorCode implements ErrorCode {
     STUDENT_NOT_FOUND(404, "Student not found"),
     DUPLICATE_STUDENT_ID(409, "Duplicate student id are not allowed"),
     DUPLICATE_ATTENDANCE(409, "Duplicate attendance are not allowed"),
+    CLASSROOM_AND_CLASS_GROUP_NOT_FOUND(404, "Classroom and class group not found"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),

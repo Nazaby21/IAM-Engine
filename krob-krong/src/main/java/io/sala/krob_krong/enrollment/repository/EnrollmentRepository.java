@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Repository
 public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, UUID> {
@@ -19,5 +20,5 @@ public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, UU
                 and e.status = 'COMPLETED'
             """, nativeQuery = true)
     List<EnrollmentEntity> findAllEnrollmentByScheduleId(
-            @Param("scheduleId") UUID scheduleId, @Param("studentIds") List<UUID> studentIds);
+            @PathVariable("scheduleId") UUID scheduleId, @PathVariable("studentIds") List<UUID> studentIds);
 }

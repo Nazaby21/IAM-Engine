@@ -9,7 +9,11 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +22,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldNameConstants
 @Table(name = "schedule")
 public class ScheduleEntity {
