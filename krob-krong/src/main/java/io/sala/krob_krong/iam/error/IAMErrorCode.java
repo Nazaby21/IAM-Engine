@@ -56,7 +56,12 @@ public enum IAMErrorCode implements ErrorCode {
     EVENT_ALREADY_EXIST(400, "This event is already created"),
     EVENT_DATE_CANNOT_BE_PAST(400,"This event cannot be in the past"),
     EVENT_NOT_FOUND (400, "Event not found"),
-    EVENT_DATE_REQUIRED(400, "Event date is null");
+    EVENT_DATE_REQUIRED(400, "Event date is null"),
+
+    ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
+    ENROLLMENT_NOT_FOUND(400, "not found"),
+    CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
+    TICKET_EXISTING(400, "ticket id still existing");
 
     private final int httpStatus;
     private final String defaultMessage;

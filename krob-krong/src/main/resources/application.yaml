@@ -46,7 +46,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${VALKEY_PASSWORD}
 krob-krong:
   account:
     verification:
