@@ -1,5 +1,6 @@
 package io.sala.krob_krong.classroom.entity;
 
+import io.sala.krob_krong.classroom.constants.ClassStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
@@ -41,8 +42,9 @@ public class ClassroomEntity {
     @Column(name = "class_type", length = 30)
     private String classType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 30, nullable = false)
-    private String status;
+    private ClassStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

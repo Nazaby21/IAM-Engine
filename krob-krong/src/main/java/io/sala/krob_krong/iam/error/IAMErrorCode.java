@@ -51,7 +51,14 @@ public enum IAMErrorCode implements ErrorCode {
     SUPPORT_MFA_REQUIRED(403, "Platform roles require MFA"),
 
     INVALID_REFRESH_TOKEN(401, "The session has expired or is invalid"),
-    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again");
+    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again"),
+
+    INVALID_CLASS_STATUS(400,"Invalid class's status"),
+    INVALID_CLASS_TYPE(400,"Invalid class's type"),
+    CLASSROOM_NOT_FOUND(404, "Classroom not found"),
+
+    NOT_REQUIRED_FLOOR(400,"Floor is not allow for online class"),
+    REQUIRED_FLOOR(400, "Floor is required for offline class");
 
     private final int httpStatus;
     private final String defaultMessage;

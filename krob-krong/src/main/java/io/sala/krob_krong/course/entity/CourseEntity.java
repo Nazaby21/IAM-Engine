@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -49,14 +50,14 @@ public class CourseEntity {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
 
     @Column(name = "deleted_by")
     private UUID deletedBy;
 
-    @CreationTimestamp
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 }
