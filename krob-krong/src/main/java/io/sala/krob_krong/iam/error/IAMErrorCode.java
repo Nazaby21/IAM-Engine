@@ -56,7 +56,9 @@ public enum IAMErrorCode implements ErrorCode {
     SUPPORT_MFA_REQUIRED(403, "Platform roles require MFA"),
 
     INVALID_REFRESH_TOKEN(401, "The session has expired or is invalid"),
-    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again");
+    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again"),
+
+    PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment");
 
     private final int httpStatus;
     private final String defaultMessage;

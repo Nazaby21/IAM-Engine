@@ -28,7 +28,7 @@ public class AttendanceEntity {
     private UUID scheduleId;
 
     @Column(name = "enrollment_id")
-    private UUID enrollmentId;
+    private String enrollmentId;
 
     @Column(name = "user_id")
     private UUID userId;

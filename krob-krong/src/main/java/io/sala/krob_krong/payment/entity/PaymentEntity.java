@@ -21,12 +21,11 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "payment")
 public class PaymentEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
-    private UUID id;
+    @Column(name = "id", nullable = false, unique = true)
+    private String id;
 
     @Column(name = "enrollment_id")
-    private UUID enrollmentId;
+    private String enrollmentId;
 
     @Column(name = "amount")
     private BigDecimal amount;
