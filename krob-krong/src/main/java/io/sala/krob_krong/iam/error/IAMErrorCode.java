@@ -68,6 +68,8 @@ public enum IAMErrorCode implements ErrorCode {
     CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
     TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
 
+    PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
+
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),
     COURSE_NOT_FOUND(404, "Course not found"),

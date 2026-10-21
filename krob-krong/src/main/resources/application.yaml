@@ -51,6 +51,11 @@ spring:
       host: localhost
       port: 6379
       password: ${VALKEY_PASSWORD}
+
+logging:
+  pattern:
+    correlation: "[%X{trace_id:-}] "
+
 krob-krong:
   account:
     verification:
