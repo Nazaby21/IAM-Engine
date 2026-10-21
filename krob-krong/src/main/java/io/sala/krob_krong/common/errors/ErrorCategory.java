@@ -5,5 +5,6 @@ public enum ErrorCategory {
     AUTHENTICATION,
     AUTHORIZATION,
     NOT_FOUND,
-    INTERNAL
+    INTERNAL,
+    BAD_REQUEST
 }
