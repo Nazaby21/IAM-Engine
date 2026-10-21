@@ -10,9 +10,9 @@ import io.sala.krob_krong.enrollment.repository.EnrollmentRepository;
 import io.sala.krob_krong.enrollment.service.EnrollmentService;
 import io.sala.krob_krong.enrollment.service.TicketService;
 import io.sala.krob_krong.enrollment.service.validator.EnrollmentValidator;
-import io.sala.krob_krong.enrollment.utils.IdGenerator;
 import io.sala.krob_krong.school.service.SchoolAccess;
 import java.util.UUID;
+import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
