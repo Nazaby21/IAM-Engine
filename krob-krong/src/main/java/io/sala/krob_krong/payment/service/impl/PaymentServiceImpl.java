@@ -8,8 +8,8 @@ import io.sala.krob_krong.payment.mapper.PaymentMapper;
 import io.sala.krob_krong.payment.repository.PaymentRepository;
 import io.sala.krob_krong.payment.service.PaymentService;
 import io.sala.krob_krong.payment.service.validator.PaymentValidator;
-import io.sala.krob_krong.payment.utils.IdGenerator;
 import io.sala.krob_krong.school.service.SchoolAccess;
+import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

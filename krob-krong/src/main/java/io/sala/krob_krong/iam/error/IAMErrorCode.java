@@ -94,12 +94,7 @@ public enum IAMErrorCode implements ErrorCode {
     SCHEDULE_OVERLAP(409, "Schedules overlap on the same day"),
     SCHEDULE_NOT_FOUND(404, "Schedule not found"),
     CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
-    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
-
-    EVENT_ALREADY_EXIST(400, "This event is already created"),
-    EVENT_DATE_CANNOT_BE_PAST(400,"This event cannot be in the past"),
-    EVENT_NOT_FOUND (400, "Event not found"),
-    EVENT_DATE_REQUIRED(400, "Event date is null");
+    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject");
 
     private final int httpStatus;
     private final String defaultMessage;

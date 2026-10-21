@@ -1,8 +1,9 @@
 package io.sala.krob_krong.enrollment.service.impl;
 
 import io.sala.krob_krong.enrollment.service.TicketService;
-import io.sala.krob_krong.enrollment.utils.IdGenerator;
 import java.time.Duration;
+
+import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
