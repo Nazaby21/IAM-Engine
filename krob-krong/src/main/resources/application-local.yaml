@@ -1,8 +1,0 @@
-postgres:
-  datasource:
-    username: postgres
-    password: Raalakama41
-spring:
-  data:
-    redis:
-      password: supersecret
