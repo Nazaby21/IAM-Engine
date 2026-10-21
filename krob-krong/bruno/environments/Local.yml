@@ -44,3 +44,9 @@ variables:
     name: verification_token
   - secret: true
     name: admin_access_token
+  - name: admin_email
+    value: admin@example.com
+  - secret: true
+    name: admin_password
+  - name: mfa_code
+    value: ""

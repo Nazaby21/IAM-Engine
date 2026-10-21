@@ -27,7 +27,7 @@ docs:
        Protected requests inherit `Authorization: Bearer {{access_token}}`; Authentication, Health and Security checks send none.
     5. Run *Refresh token* to rotate both tokens. Use only the latest refresh token and serialize refresh requests.
 
-    Registration creates an unverified person, with no school/platform roles. MFA-enabled accounts require a separate MFA flow.
+    Registration creates an unverified person, with no school/platform roles. Accounts with MFA on (see the **MFA** folder) must set `mfa_code` before Login; super admins use *Authentication → Admin login*.
     A token stops working as soon as its session (refresh-token family) is revoked or the account is deactivated.
 
     ## School onboarding

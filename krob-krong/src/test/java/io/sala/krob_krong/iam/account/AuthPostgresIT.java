@@ -10,11 +10,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.sala.krob_krong.account.dto.AuthResponse;
 import io.sala.krob_krong.account.dto.LoginRequest;
 import io.sala.krob_krong.account.dto.RegisterRequest;
+import io.sala.krob_krong.account.mfa.Totp;
 import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.account.service.AuthService;
 import io.sala.krob_krong.common.exceptions.KrobKrongException;
 import io.sala.krob_krong.iam.security.impl.TokenServiceImpl;
+import java.io.ByteArrayOutputStream;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 // Point AUTH_TEST_DB_URL at a disposable database: this test applies all migrations and writes test accounts.
@@ -62,6 +68,9 @@ class AuthPostgresIT {
 
     @Autowired
     private ObjectMapper json;
+
+    @Autowired
+    private TransactionTemplate transactions;
 
     @Test
     void publicHttpFlowRegistersLogsInAndRotatesWithoutPrivilegeEscalation() throws Exception {
@@ -260,6 +269,212 @@ class AuthPostgresIT {
                             .single())
                     .isEqualTo(1);
         }
+    }
+
+    @Test
+    void mfaEnrolledSuperAdminSignsInWithACodeAndReachesAdminEndpoints() throws Exception {
+        AuthResponse registered = register();
+        String passwordOnly = "Bearer " + registered.getAccessToken();
+        Enrolled mfa = enrollMfa(registered);
+        String activationCode = Totp.code(mfa.secret(), mfa.step());
+        assertThat(jdbc.sql("SELECT secret_ciphertext FROM mfa_totp WHERE user_id = ?")
+                        .param(registered.getUserId())
+                        .query(String.class)
+                        .single())
+                .doesNotContain(Totp.base32(mfa.secret()));
+        grantSuperAdmin(registered.getUserId(), passwordOnly);
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(registered, "")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("MFA_REQUIRED"));
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(registered, activationCode)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("INVALID_MFA_CODE"));
+        AuthResponse admin = json.treeToValue(
+                data(mvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginJson(registered, Totp.code(mfa.secret(), mfa.step() + 1))))
+                        .andExpect(status().isOk())),
+                AuthResponse.class);
+        assertThat(jwt.decode(admin.getAccessToken()).getClaimAsBoolean("mfa")).isTrue();
+
+        mvc.perform(get("/api/admin/schools").header("Authorization", "Bearer " + admin.getAccessToken()))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/admin/schools").header("Authorization", passwordOnly))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("MFA_REQUIRED"));
+        assertError(() -> auth.refresh(registered.getRefreshToken(), null, null), "MFA_REQUIRED");
+
+        AuthResponse refreshed = auth.refresh(admin.getRefreshToken(), null, null);
+        assertThat(jwt.decode(refreshed.getAccessToken()).getClaimAsBoolean("mfa"))
+                .isTrue();
+        mvc.perform(get("/api/admin/schools").header("Authorization", "Bearer " + refreshed.getAccessToken()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void wrongCodesLockTheFactorEvenAfterTheFailedRequestEnds() throws Exception {
+        AuthResponse registered = register();
+        String bearer = "Bearer " + registered.getAccessToken();
+        mvc.perform(post("/api/me/mfa/totp").header("Authorization", bearer)).andExpect(status().isCreated());
+        for (int attempt = 1; attempt <= 5; attempt++) {
+            mvc.perform(post("/api/me/mfa/totp/activate")
+                    .header("Authorization", bearer)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"code\":\"%06d\"}".formatted(attempt)));
+        }
+        assertThat(jdbc.sql("SELECT locked_until > now() FROM mfa_totp WHERE user_id = ?")
+                        .param(registered.getUserId())
+                        .query(Boolean.class)
+                        .single())
+                .isTrue();
+        mvc.perform(post("/api/me/mfa/totp/activate")
+                        .header("Authorization", bearer)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"000000\"}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("MFA_LOCKED"));
+    }
+
+    @Test
+    void superAdminInvitesAnotherSuperAdminThroughTheApi() throws Exception {
+        AuthResponse first = register();
+        Enrolled firstMfa = enrollMfa(first);
+        grantSuperAdmin(first.getUserId(), "Bearer " + first.getAccessToken());
+        String admin = "Bearer " + signInWithCode(first, firstMfa).getAccessToken();
+        AuthResponse second = register();
+        UUID superAdminRole = roleId("super_admin");
+
+        mvc.perform(platformInvite(admin, second.getUserId(), superAdminRole))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.message").value("platform roles require MFA"));
+        Enrolled secondMfa = enrollMfa(second);
+        mvc.perform(platformInvite("Bearer " + first.getAccessToken(), second.getUserId(), superAdminRole))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("MFA_REQUIRED"));
+        mvc.perform(platformInvite(admin, second.getUserId(), roleId("student")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("ROLE_NOT_GRANTABLE_HERE"));
+        JsonNode invitation = data(mvc.perform(platformInvite(admin, second.getUserId(), superAdminRole))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.status").value("pending"))
+                .andExpect(jsonPath("$.data.school_id").isEmpty())
+                .andExpect(jsonPath("$.data.granted_by").value(first.getUserId().toString())));
+        mvc.perform(platformInvite(admin, second.getUserId(), superAdminRole))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code").value("ROLE_ALREADY_HELD"));
+
+        String secondAdmin = "Bearer " + signInWithCode(second, secondMfa).getAccessToken();
+        mvc.perform(get("/api/admin/schools").header("Authorization", secondAdmin))
+                .andExpect(status().isForbidden());
+        mvc.perform(post(
+                                "/api/me/invitations/{id}/accept",
+                                invitation.path("id").asText())
+                        .header("Authorization", secondAdmin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("active"));
+        mvc.perform(get("/api/admin/schools").header("Authorization", secondAdmin))
+                .andExpect(status().isOk());
+    }
+
+    private record Enrolled(byte[] secret, long step) {}
+
+    private Enrolled enrollMfa(AuthResponse account) throws Exception {
+        String bearer = "Bearer " + account.getAccessToken();
+        JsonNode enrollment = data(mvc.perform(post("/api/me/mfa/totp").header("Authorization", bearer))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.otpauth_uri").isNotEmpty()));
+        byte[] secret = base32Decode(enrollment.path("secret").asText());
+        long step = Totp.step(Instant.now());
+        mvc.perform(post("/api/me/mfa/totp/activate")
+                        .header("Authorization", bearer)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"%s\"}".formatted(Totp.code(secret, step))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.mfa_enabled_at").isNotEmpty());
+        return new Enrolled(secret, step);
+    }
+
+    private AuthResponse signInWithCode(AuthResponse account, Enrolled mfa) throws Exception {
+        return json.treeToValue(
+                data(mvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginJson(account, Totp.code(mfa.secret(), mfa.step() + 1))))
+                        .andExpect(status().isOk())),
+                AuthResponse.class);
+    }
+
+    private static org.springframework.test.web.servlet.RequestBuilder platformInvite(
+            String bearer, UUID userId, UUID roleId) {
+        return post("/api/admin/members/invite")
+                .header("Authorization", bearer)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"user_id\":\"%s\",\"role_id\":\"%s\"}".formatted(userId, roleId));
+    }
+
+    private UUID roleId(String code) {
+        return jdbc.sql("SELECT id FROM role WHERE code = ?")
+                .param(code)
+                .query(UUID.class)
+                .single();
+    }
+
+    private void grantSuperAdmin(UUID userId, String bearer) throws Exception {
+        Optional<UUID> existing = jdbc.sql("""
+                        SELECT ur.user_id FROM user_role ur JOIN role r ON r.id = ur.role_id
+                        WHERE r.kind = 'platform' AND ur.accepted_at IS NOT NULL AND ur.revoked_at IS NULL
+                          AND tstzrange(ur.valid_from, ur.valid_to) @> now()
+                        LIMIT 1""").query(UUID.class).optional();
+        if (existing.isEmpty()) {
+            jdbc.sql("INSERT INTO user_role (user_id, role_id, source) SELECT ?, id, 'bootstrap' FROM role"
+                            + " WHERE code = 'super_admin'")
+                    .param(userId)
+                    .update();
+            return;
+        }
+        UUID grantId = transactions.execute(_ -> {
+            jdbc.sql("SELECT set_config('app.actor_id', ?, true)")
+                    .param(existing.get().toString())
+                    .query(String.class)
+                    .single();
+            return jdbc.sql("INSERT INTO user_role (user_id, role_id, source) SELECT ?, id, 'invite' FROM role"
+                            + " WHERE code = 'super_admin' RETURNING id")
+                    .param(userId)
+                    .query(UUID.class)
+                    .single();
+        });
+        mvc.perform(post("/api/me/invitations/{id}/accept", grantId).header("Authorization", bearer))
+                .andExpect(status().isOk());
+    }
+
+    private JsonNode data(org.springframework.test.web.servlet.ResultActions result) throws Exception {
+        return json.readTree(result.andReturn().getResponse().getContentAsString())
+                .path("data");
+    }
+
+    private static String loginJson(AuthResponse account, String mfaCode) {
+        return "{\"email\":\"%s\",\"password\":\"%s\",\"mfa_code\":\"%s\"}"
+                .formatted(account.getEmail(), PASSWORD, mfaCode);
+    }
+
+    private static byte[] base32Decode(String value) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int buffer = 0;
+        int bits = 0;
+        for (char c : value.toCharArray()) {
+            buffer = (buffer << 5) | alphabet.indexOf(c);
+            bits += 5;
+            if (bits >= 8) {
+                out.write((buffer >>> (bits - 8)) & 0xff);
+                bits -= 8;
+            }
+        }
+        return out.toByteArray();
     }
 
     private long activeTokens(UUID userId) {

@@ -7,9 +7,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.sala.krob_krong.account.entity.UserEntity;
-import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.branch.entity.BranchEntity;
 import io.sala.krob_krong.branch.repository.BranchRepository;
+import io.sala.krob_krong.course_subject.repository.UserRepository;
 import io.sala.krob_krong.iam.entity.UserRoleEntity;
 import io.sala.krob_krong.iam.repository.UserRoleRepository;
 import io.sala.krob_krong.iam.security.policy.RoleCatalogProvider;

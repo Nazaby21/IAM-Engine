@@ -45,6 +45,9 @@ public class RefreshTokenEntity {
     @Column(name = "expires_at", nullable = false, updatable = false)
     private Instant expiresAt;
 
+    @Column(name = "mfa_verified", nullable = false, updatable = false)
+    private boolean mfaVerified;
+
     @Column(name = "revoked_at")
     private Instant revokedAt;
 

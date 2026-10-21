@@ -4,15 +4,17 @@ import io.sala.krob_krong.account.dto.AuthResponse;
 import io.sala.krob_krong.account.dto.LoginRequest;
 import io.sala.krob_krong.account.dto.RegisterRequest;
 import io.sala.krob_krong.account.entity.UserEntity;
-import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.account.service.AuthService;
 import io.sala.krob_krong.account.service.AuthSessionService;
+import io.sala.krob_krong.account.service.MfaService;
 import io.sala.krob_krong.account.specification.UserSpecification;
 import io.sala.krob_krong.common.exceptions.BusinessException;
+import io.sala.krob_krong.course_subject.repository.UserRepository;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
 import java.util.Locale;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +24,20 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwords;
     private final AuthSessionService sessions;
     private final TokenService tokens;
+    private final MfaService mfa;
     private final String dummyPasswordHash;
 
     public AuthServiceImpl(
-            UserRepository users, PasswordEncoder passwords, AuthSessionService sessions, TokenService tokens) {
+            UserRepository users,
+            PasswordEncoder passwords,
+            AuthSessionService sessions,
+            TokenService tokens,
+            MfaService mfa) {
         this.users = users;
         this.passwords = passwords;
         this.sessions = sessions;
         this.tokens = tokens;
+        this.mfa = mfa;
         // Unknown accounts still incur password verification work.
         this.dummyPasswordHash = passwords.encode(UUID.randomUUID().toString());
     }
@@ -57,7 +65,15 @@ public class AuthServiceImpl implements AuthService {
         if (!matches || user == null || user.getPasswordHash() == null || !user.isPerson()) {
             throw new BusinessException(IAMErrorCode.INVALID_CREDENTIALS);
         }
-        return sessions.login(user.getId(), userAgent, ip);
+        boolean mfaVerified = false;
+        if (user.getMfaEnabledAt() != null) {
+            if (StringUtils.isEmpty(request.getMfaCode())) {
+                throw new BusinessException(IAMErrorCode.MFA_REQUIRED);
+            }
+            mfa.verifyLoginCode(user.getId(), request.getMfaCode());
+            mfaVerified = true;
+        }
+        return sessions.login(user.getId(), mfaVerified, userAgent, ip);
     }
 
     @Override

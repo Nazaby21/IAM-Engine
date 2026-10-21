@@ -34,6 +34,7 @@ and every API decision is made by a role-based access control (RBAC) policy eval
 - [Configuration](#configuration)
 - [API overview](#api-overview)
 - [School onboarding and SMTP setup](docs/onboarding.md)
+- [Super admin and role assignment](docs/super-admin-and-roles.md)
 - [Testing](#testing)
 - [Recipe: a new protected endpoint](#recipe-a-new-protected-endpoint)
 - [Known gaps](#known-gaps)
@@ -323,7 +324,8 @@ permissions — so every new write path must be protected by `@RequirePermission
 (type `at+jwt`, with issuer, audience, subject, session id, kind and MFA claims) and opaque refresh tokens stored
 as SHA-256 hashes. A refresh-token *family* is a session:
 
-- `issueRefreshToken(userId, null, userAgent, ip)` starts a session; pass the previous family id to continue it.
+- `issueRefreshToken(userId, null, mfaVerified, userAgent, ip)` starts a session; pass the previous family id to
+  continue it. The family records whether sign-in passed MFA, and refreshes keep that status.
 - `requireActive(raw)` returns the stored token; presenting an already-rotated token revokes the whole family
   (reuse detection) and fails with `REFRESH_TOKEN_REUSE`.
 - `markRotated(previous, newId)` is atomic, so two concurrent refreshes with one token cannot both succeed.
@@ -374,8 +376,9 @@ refreshes lock the account before reading token state and atomically inserting/r
 Every registered account is an active, **unverified person**. Registration never grants a school or platform
 role or marks MFA verified. The ordinary `member` role is implicit in the existing authorization policy;
 there is no `user_role` insert. Existing accounts without password credentials and service accounts cannot use
-password login. Accounts with MFA enabled receive `MFA_REQUIRED`; a separate MFA challenge flow is not
-implemented, so these endpoints cannot bypass it.
+password login. Accounts with MFA turned on must send a 6-digit authenticator code as `mfa_code` with the login
+request; their tokens then carry `mfa: true`. Enrollment, lockout and recovery are described in
+[Super admin and role assignment](docs/super-admin-and-roles.md#turn-on-mfa-for-an-account).
 
 | Error | HTTP | Meaning |
 |---|---|---|
@@ -383,12 +386,14 @@ implemented, so these endpoints cannot bypass it.
 | `EMAIL_ALREADY_REGISTERED` | 409 | Email already exists, including a concurrent registration conflict |
 | `INVALID_CREDENTIALS` | 401 | Unknown account, wrong password, no password credential, or service account |
 | `ACCOUNT_SUSPENDED` | 403 | Correct credentials or active refresh token, but inactive account |
-| `MFA_REQUIRED` | 403 | This account requires an MFA flow |
+| `MFA_REQUIRED` | 403 | MFA is on for this account: send `mfa_code`, or sign in again if the session predates MFA |
+| `INVALID_MFA_CODE` | 401 | Wrong or already-used authenticator code |
+| `MFA_LOCKED` | 429 | Too many wrong codes; the authenticator is locked for 15 minutes |
 | `INVALID_REFRESH_TOKEN` | 401 | Unknown or expired refresh token |
 | `REFRESH_TOKEN_REUSE` | 401 | Previously revoked/rotated token; the family is revoked durably |
 
 Email verification is implemented through SMTP; see [School onboarding](docs/onboarding.md).
-Password recovery, MFA challenges, and login throttling remain separate work. Configure
+Password recovery, MFA recovery codes, and login throttling remain separate work. Configure
 rate limits at the deployment boundary before exposing these public credential endpoints to the internet.
 
 ## Common utilities
@@ -408,7 +413,7 @@ return ApiResponse.paginated(PageResponse.from(page));  // Spring Data Page<T> �
   "data": { "content": [ … ], "meta": { "total_elements": 42, "total_pages": 3, "page": 0, "size": 20, "has_next": true } },
   "error": null,
   "request_id": "7c9e…",
-  "trace_id": null,
+  "trace_id": "4bf9…",
   "timestamp": "2026-10-06T00:25:19.849Z"
 }
 ```
@@ -563,10 +568,13 @@ words. Log only DTOs or masked strings — never entities, tokens or raw request
 
 [TraceContext](src/main/java/io/sala/krob_krong/common/utils/TraceContext.java) defines the headers
 `X-Request-ID`, `X-Trace-ID`, `X-Span-ID` and the MDC keys `request_id`, `trace_id`, `span_id`.
-[MDCFilter](src/main/java/io/sala/krob_krong/common/trace/MDCFilter.java) reads or generates them per request and
-echoes them on the response; `@RequestId String requestId` / `@TraceId String traceId` controller parameters are
-meant to receive them, and `ApiResponse` copies them into every body. **These are not wired up yet** — see
-[Known gaps](#known-gaps); today `request_id` in responses is a fresh random value.
+[MDCFilter](src/main/java/io/sala/krob_krong/common/trace/MDCFilter.java), registered by
+[TraceConfig](src/main/java/io/sala/krob_krong/common/trace/TraceConfig.java), runs before Spring Security on every
+request, including rejected and error-dispatched ones. It takes `X-Request-ID` and `X-Trace-ID` from the caller when
+they are 1–64 characters of `[A-Za-z0-9._-]`, otherwise it generates UUIDs, then puts them in the MDC and on the
+response headers. `ApiResponse` copies both into every body, log lines carry `[trace_id]` through
+`logging.pattern.correlation`, and controllers can take `@RequestId String requestId` / `@TraceId String traceId`
+parameters. Nothing sets `X-Span-ID` or `span_id` yet.
 
 ## Database
 
@@ -585,6 +593,11 @@ responsibility:
 | `V1_0_8__WRITE_GUARDS` | Trigger functions enforcing data rules on writes |
 | `V1_0_9__REFRESH_TOKEN` | `refresh_token` |
 | `V1_0_10__SEED_DATA` | Permissions, roles, scopes, grant rules, reserved slugs |
+| `V1_0_11__USER_PASSWORD` | `app_user.password_hash` |
+| `V1_0_12__SCHOOL_ONBOARDING` | `email_verification_token`, image-processor service account, reviewer read permissions, updated `school_guard` |
+
+The entity-relationship diagram is [docs/erd.eraserdiagram](docs/erd.eraserdiagram) (Eraser diagram-as-code):
+preview it with the Eraser VS Code extension, or paste everything after its first line into an ERD on eraser.io.
 | `V1_0_11__USER_PASSWORD` | Nullable password credential for person accounts; existing users remain unchanged |
 | `V1_0_12__SCHOOL_ONBOARDING` | Email verification tokens, image pipeline service identity, review read permissions and extended review snapshots |
 
@@ -615,18 +628,22 @@ variables using Spring's relaxed binding (e.g. `KROB_KRONG_SECURITY_JWT_SECRET`,
 | `krob-krong.security.jwt.secret` | HS256 signing key, at least 32 bytes |
 | `krob-krong.security.jwt.issuer` / `audience` | Token `iss` / `aud` (`krob-krong` / `krob-krong-api`) |
 | `krob-krong.security.jwt.ttl` / `refresh-ttl` / `clock-skew` | Access token lifetime (15m default, 12h in yaml), refresh lifetime (30d), allowed clock skew (30s) |
+| `krob-krong.security.mfa.encryption-key` | Encrypts stored authenticator secrets, at least 32 bytes; changing it invalidates every enrollment |
+| `krob-krong.security.mfa.max-failed-attempts` / `lockout` | Wrong codes before the authenticator locks (5) and for how long (15m) |
 | `krob-krong.security.cors.allowed-origins` / `max-age` | Browser origins allowed to call the API |
 | `krob-krong.storage.s3.*` | See [S3 storage](#s3-storage-s3util) |
 
 > **The JWT secret in `application.yaml` is a development key that is committed to the repository.** Anyone with
 > the repository can sign tokens for any user with it. Every shared or production environment must override it,
-> e.g. `KROB_KRONG_SECURITY_JWT_SECRET=$(openssl rand -base64 48)`.
+> e.g. `KROB_KRONG_SECURITY_JWT_SECRET=$(openssl rand -base64 48)`. The same applies to the development
+> `krob-krong.security.mfa.encryption-key` (`KROB_KRONG_SECURITY_MFA_ENCRYPTION_KEY`).
 
 ## API overview
 
 All under `/api`. Authentication and email confirmation are public. Approved school profiles/branding and live
 workspace resolution are public; other operations require a bearer token.
-See [School onboarding](docs/onboarding.md) for the complete new endpoint list, lifecycle rules and SMTP setup.
+See [School onboarding](docs/onboarding.md) for the complete new endpoint list, lifecycle rules and SMTP setup,
+and [Super admin and role assignment](docs/super-admin-and-roles.md) for bootstrapping an admin and granting roles.
 The [bruno](bruno) folder is a [Bruno](https://www.usebruno.com/) collection (3.x, YAML format) with requests,
 docs and tests. Open it in Bruno, choose **Local**, set `auth_email`, `auth_display_name` and the `auth_password`
 secret, then run **Authentication → Register** or **Login**. Successful authentication requests store both
@@ -635,15 +652,18 @@ tokens as in-memory runtime variables for subsequent requests; **Refresh token**
 | Method | Path | Authorization |
 |---|---|---|
 | POST | `/auth/register` | public; creates ordinary person account |
-| POST | `/auth/login` | public; email/password |
+| POST | `/auth/login` | public; email/password, plus `mfa_code` when MFA is on |
 | POST | `/auth/refresh` | public; latest refresh token |
+| POST | `/me/mfa/totp` | signed in; start authenticator enrollment, returns the secret once |
+| POST | `/me/mfa/totp/activate` | signed in; `{ "code": "123456" }` turns MFA on |
 | GET | `/roles?kind=` | signed in |
 | GET | `/roles/{role_id}` | signed in |
 | GET | `/roles/grantable?school_id=&branch_id=` | signed in; roles the caller may grant there |
 | GET | `/permissions?search=` | signed in |
 | GET | `/permissions/{code}` | signed in |
 | GET | `/permissions/effective?school_id=&branch_id=` | signed in; the caller's own permissions |
-| POST | `/schools/{school_id}/members/invite` | grant rules (`canGrantRole`) |
+| POST | `/schools/{school_id}/members/invite` | grant rules (`canGrantRole`); school roles only |
+| POST | `/admin/members/invite` | grant rules and an MFA-verified session; platform roles such as `super_admin` |
 | GET | `/schools/{school_id}/members` | `member:read` in the school |
 | GET | `/schools/{school_id}/members/{user_id}/roles` | `member:read` in the school, or yourself |
 | GET | `/me/invitations` | signed in |
@@ -714,11 +734,10 @@ existing `branch` feature; the endpoint below is an example, not a currently reg
 
 ## Known gaps
 
-- **Authentication follow-ups:** password recovery, MFA challenges, and request throttling
-  are not implemented. Existing accounts without a password need a separate credential-provisioning flow.
-- **Tracing and request logging are not wired.** Nothing registers `MDCFilter`, `RequestResponseLogFilter` or
-  `TraceIdMethodArgumentResolver`, and the resolver checks method annotations instead of parameter annotations, so
-  `@RequestId`/`@TraceId` never resolve.
+- **Authentication follow-ups:** password recovery, MFA recovery codes, turning MFA off through the API, and
+  request throttling are not implemented. Existing accounts without a password need a separate
+  credential-provisioning flow.
+- **Request logging is not wired.** Nothing registers `RequestResponseLogFilter`.
 - **`mask:` in `application.yaml` is not applied.** `MaskingConfig` is never registered as configuration
   properties, and the yaml's `mask-pattern` key does not match its `fullMask` field; `MaskedLogger.of(...)` uses
   the built-in defaults.
