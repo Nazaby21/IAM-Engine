@@ -23,7 +23,7 @@ import io.sala.krob_krong.course_subject.entity.CourseSubjectCompensationId;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectEntity;
 import io.sala.krob_krong.course_subject.mapper.CourseSubjectMapper;
 import io.sala.krob_krong.course_subject.repository.CourseSubjectRepository;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.course_subject.service.CourseSubjectService;
 import io.sala.krob_krong.course_subject.specification.CourseSubjectListSpec;
 import io.sala.krob_krong.course_subject.validator.ScheduleValidator;

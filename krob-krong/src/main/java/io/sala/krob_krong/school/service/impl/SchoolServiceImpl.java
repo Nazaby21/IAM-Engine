@@ -9,7 +9,7 @@ import io.sala.krob_krong.branch.specification.*;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.repository.UserRoleRepository;
 import io.sala.krob_krong.iam.security.AccessPolicyService;

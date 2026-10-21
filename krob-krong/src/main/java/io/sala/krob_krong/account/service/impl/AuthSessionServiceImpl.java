@@ -5,7 +5,7 @@ import io.sala.krob_krong.account.entity.RefreshTokenEntity;
 import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.account.service.AuthSessionService;
 import io.sala.krob_krong.common.exceptions.BusinessException;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
 import io.sala.krob_krong.iam.security.dto.AccessToken;

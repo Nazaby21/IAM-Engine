@@ -9,7 +9,7 @@ import io.sala.krob_krong.account.service.AuthSessionService;
 import io.sala.krob_krong.account.service.MfaService;
 import io.sala.krob_krong.account.specification.UserSpecification;
 import io.sala.krob_krong.common.exceptions.BusinessException;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
 import java.util.Locale;

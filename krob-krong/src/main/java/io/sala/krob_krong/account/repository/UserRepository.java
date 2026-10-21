@@ -1,4 +1,4 @@
-package io.sala.krob_krong.course_subject.repository;
+package io.sala.krob_krong.account.repository;
 
 import io.sala.krob_krong.account.entity.UserEntity;
 import jakarta.persistence.LockModeType;

@@ -4,7 +4,7 @@ import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.iam.dto.GrantRoleRequest;
 import io.sala.krob_krong.iam.dto.MemberResponse;
 import io.sala.krob_krong.iam.dto.UserRoleResponse;
