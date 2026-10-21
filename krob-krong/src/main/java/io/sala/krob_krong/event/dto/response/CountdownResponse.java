@@ -1,10 +1,9 @@
 package io.sala.krob_krong.event.dto.response;
 
 import io.sala.krob_krong.event.constant.EventStatus;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class CountdownResponse {

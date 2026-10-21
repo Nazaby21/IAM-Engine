@@ -14,15 +14,14 @@ import io.sala.krob_krong.event.service.validator.EventValidator;
 import io.sala.krob_krong.event.specification.EventSpecz;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.school.service.SchoolAccess;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,16 +33,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public PageResponse<EventResponse> listAll(PageRequest page) {
-        return PageResponse.from(
-                eventRepository.findAll(
-                        page.toSpring(Sort.by(Sort.Direction.DESC, EventEntity.Fields.createdAt)
-                        )).map(eventMapper::toResponse)
-        );
+        return PageResponse.from(eventRepository
+                .findAll(page.toSpring(Sort.by(Sort.Direction.DESC, EventEntity.Fields.createdAt)))
+                .map(eventMapper::toResponse));
     }
 
     @Override
     public EventResponse listById(UUID id) {
-        EventEntity event = eventRepository.findById(id).orElseThrow(()-> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
+        EventEntity event =
+                eventRepository.findById(id).orElseThrow(() -> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
         return (eventMapper.toResponse(event));
     }
 
@@ -53,11 +51,7 @@ public class EventServiceImpl implements EventService {
         LocalDate eventDate = request.getEventDate();
         eventValidator.validateEventDate(eventDate);
         Specification<EventEntity> specification =
-                EventSpecz.bySchoolIdAndTitleAndEventDate(
-                        schoolId,
-                        request.getTitle(),
-                        eventDate
-                );
+                EventSpecz.bySchoolIdAndTitleAndEventDate(schoolId, request.getTitle(), eventDate);
         eventValidator.NotExist(specification);
         EventEntity entity = eventMapper.toEventEntity(request);
         entity.setSchoolId(schoolId);
@@ -69,14 +63,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public CountdownResponse getCountdown(UUID id) {
-        EventEntity event=eventRepository.findById(id).orElseThrow(()->new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
-        CountdownResponse response= eventMapper.toCountdown(event);
+        EventEntity event =
+                eventRepository.findById(id).orElseThrow(() -> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
+        CountdownResponse response = eventMapper.toCountdown(event);
         LocalDate today = LocalDate.now();
         LocalDate eventDate = event.getEventDate();
-        if (ObjectUtils.isEmpty(eventDate)){
+        if (ObjectUtils.isEmpty(eventDate)) {
             throw new BusinessException(IAMErrorCode.EVENT_DATE_REQUIRED);
         }
-        long dayRemaining =  ChronoUnit.DAYS.between(today, eventDate);
+        long dayRemaining = ChronoUnit.DAYS.between(today, eventDate);
         response.setDaysRemaining(dayRemaining);
 
         return response;

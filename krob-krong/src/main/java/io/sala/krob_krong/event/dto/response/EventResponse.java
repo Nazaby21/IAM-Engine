@@ -1,8 +1,7 @@
 package io.sala.krob_krong.event.dto.response;
 
-import lombok.Data;
-
 import java.time.LocalDate;
+import lombok.Data;
 
 @Data
 public class EventResponse {

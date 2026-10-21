@@ -26,7 +26,7 @@ public class PaymentEntity {
     private UUID id;
 
     @Column(name = "enrollment_id")
-    private UUID enrollmentId;
+    private String enrollmentId;
 
     @Column(name = "amount")
     private BigDecimal amount;
