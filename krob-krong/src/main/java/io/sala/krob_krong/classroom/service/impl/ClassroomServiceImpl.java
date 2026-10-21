@@ -105,7 +105,7 @@ public class ClassroomServiceImpl implements ClassroomService {
     }
 
     private UUID currentUserId() {
-        return UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"); // TEMP: seed user, remove later
+        return UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"); // seed user temp
     }
     private void validateFloor(ClassType classType, String floor){
         if(classType == ClassType.OFFLINE
