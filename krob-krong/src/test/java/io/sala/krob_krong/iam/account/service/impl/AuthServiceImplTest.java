@@ -7,11 +7,15 @@ import static org.mockito.Mockito.*;
 import io.sala.krob_krong.account.dto.LoginRequest;
 import io.sala.krob_krong.account.dto.RegisterRequest;
 import io.sala.krob_krong.account.entity.UserEntity;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.account.service.AuthSessionService;
+import io.sala.krob_krong.account.service.MfaService;
 import io.sala.krob_krong.account.service.impl.AuthServiceImpl;
+import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.exceptions.KrobKrongException;
-import io.sala.krob_krong.course_subject.repository.UserRepository;
+import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.iam.security.TokenService;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,12 +29,13 @@ class AuthServiceImplTest {
     private final PasswordEncoder passwords = mock(PasswordEncoder.class);
     private final AuthSessionService sessions = mock(AuthSessionService.class);
     private final TokenService tokens = mock(TokenService.class);
+    private final MfaService mfa = mock(MfaService.class);
     private AuthServiceImpl auth;
 
     @BeforeEach
     void setUp() {
         when(passwords.encode(anyString())).thenReturn("dummy-hash");
-        auth = new AuthServiceImpl(users, passwords, sessions, tokens);
+        auth = new AuthServiceImpl(users, passwords, sessions, tokens, mfa);
     }
 
     @Test
@@ -92,7 +97,45 @@ class AuthServiceImplTest {
         when(users.findOne(any(Specification.class))).thenReturn(Optional.of(user));
         when(passwords.matches("secret", "hash")).thenReturn(true);
         auth.login(login(), null, null);
-        verify(sessions).login(user.getId(), null, null);
+        verify(sessions).login(user.getId(), false, null, null);
+        verifyNoInteractions(mfa);
+    }
+
+    @Test
+    void mfaAccountNeedsACodeBeforeASessionStarts() {
+        mfaUser();
+        assertError(() -> auth.login(login(), null, null), "MFA_REQUIRED");
+        verifyNoInteractions(mfa, sessions);
+    }
+
+    @Test
+    void rejectedMfaCodeDoesNotStartASession() {
+        UserEntity user = mfaUser();
+        doThrow(new BusinessException(IAMErrorCode.INVALID_MFA_CODE)).when(mfa).verifyLoginCode(user.getId(), "123456");
+        LoginRequest request = login();
+        request.setMfaCode("123456");
+        assertError(() -> auth.login(request, null, null), "INVALID_MFA_CODE");
+        verifyNoInteractions(sessions);
+    }
+
+    @Test
+    void acceptedMfaCodeStartsAnMfaVerifiedSession() {
+        UserEntity user = mfaUser();
+        LoginRequest request = login();
+        request.setMfaCode("123456");
+        auth.login(request, "browser", "127.0.0.1");
+        verify(mfa).verifyLoginCode(user.getId(), "123456");
+        verify(sessions).login(user.getId(), true, "browser", "127.0.0.1");
+    }
+
+    private UserEntity mfaUser() {
+        UserEntity user = new UserEntity();
+        user.setId(UUID.randomUUID());
+        user.setPasswordHash("hash");
+        user.setMfaEnabledAt(Instant.now());
+        when(users.findOne(any(Specification.class))).thenReturn(Optional.of(user));
+        when(passwords.matches("secret", "hash")).thenReturn(true);
+        return user;
     }
 
     private static LoginRequest login() {

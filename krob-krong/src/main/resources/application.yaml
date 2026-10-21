@@ -24,8 +24,8 @@ spring:
       enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/krob_krong
-    username: ${postgres.datasource.username}
-    password: ${postgres.datasource.password}
+    username: postgres
+    password: supersecret
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: KrobKrongHikariPool
@@ -47,6 +47,10 @@ spring:
     hibernate:
       ddl-auto: validate
 
+logging:
+  pattern:
+    correlation: "[%X{trace_id:-}] "
+
 krob-krong:
   account:
     verification:
@@ -56,6 +60,8 @@ krob-krong:
     jwt:
       secret: local-development-signing-key-never-use-in-production
       ttl: 12h
+    mfa:
+      encryption-key: local-development-mfa-key-never-use-in-production
     cors:
       allowed-origins: http://localhost:3000, http://localhost:5173
   storage:

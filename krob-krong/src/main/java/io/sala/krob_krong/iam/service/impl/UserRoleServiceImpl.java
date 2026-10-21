@@ -15,6 +15,8 @@ import io.sala.krob_krong.iam.mapper.UserRoleMapper;
 import io.sala.krob_krong.iam.repository.RoleRepository;
 import io.sala.krob_krong.iam.repository.UserRoleRepository;
 import io.sala.krob_krong.iam.security.AccessPolicyService;
+import io.sala.krob_krong.iam.security.MfaSessionGuard;
+import io.sala.krob_krong.iam.security.policy.RoleCatalog;
 import io.sala.krob_krong.iam.service.UserRoleService;
 import io.sala.krob_krong.iam.specification.UserRoleSpecification;
 import java.time.Instant;
@@ -38,13 +40,37 @@ public class UserRoleServiceImpl implements UserRoleService {
     private final UserRepository userRepository;
     private final AccessPolicyService accessPolicy;
     private final UserRoleMapper userRoleMapper;
+    private final MfaSessionGuard mfaSession;
 
     @Override
     @Transactional
     public UserRoleResponse grantRole(UUID schoolId, GrantRoleRequest request, UUID actorId) {
+        return grant(schoolId, request, actorId);
+    }
+
+    @Override
+    @Transactional
+    public UserRoleResponse grantPlatformRole(GrantRoleRequest request, UUID actorId) {
+        mfaSession.require();
+        if (request.getBranchId() != null) {
+            throw new BusinessException(
+                    IAMErrorCode.ROLE_NOT_GRANTABLE_HERE, "Platform roles cannot be limited to a branch");
+        }
+        return grant(null, request, actorId);
+    }
+
+    private UserRoleResponse grant(UUID schoolId, GrantRoleRequest request, UUID actorId) {
         RoleEntity role = roleRepository
                 .findById(request.getRoleId())
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.ROLE_NOT_FOUND));
+        boolean platformRole = RoleCatalog.KIND_PLATFORM.equals(role.getKind());
+        if (platformRole != (schoolId == null)) {
+            throw new BusinessException(
+                    IAMErrorCode.ROLE_NOT_GRANTABLE_HERE,
+                    platformRole
+                            ? "Platform roles are granted with POST /api/admin/members/invite"
+                            : "School roles are granted with POST /api/schools/{school_id}/members/invite");
+        }
 
         if (!userRepository.existsById(request.getUserId())) {
             throw new BusinessException(IAMErrorCode.USER_NOT_FOUND);
@@ -56,7 +82,10 @@ public class UserRoleServiceImpl implements UserRoleService {
 
         boolean alreadyHeld = userRoleRepository.exists(UserRoleSpecification.byUserId(request.getUserId())
                 .and(UserRoleSpecification.byRoleId(request.getRoleId()))
-                .and(UserRoleSpecification.bySchoolId(schoolId))
+                .and(
+                        schoolId != null
+                                ? UserRoleSpecification.bySchoolId(schoolId)
+                                : UserRoleSpecification.platformGrants())
                 .and(
                         request.getBranchId() != null
                                 ? UserRoleSpecification.byBranchId(request.getBranchId())

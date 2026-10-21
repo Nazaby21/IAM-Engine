@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface AuthSessionService {
     AuthResponse register(UserEntity user, String userAgent, String ip);
 
-    AuthResponse login(UUID userId, String userAgent, String ip);
+    AuthResponse login(UUID userId, boolean mfaVerified, String userAgent, String ip);
 
     AuthResponse refresh(UUID userId, String refreshToken, String userAgent, String ip);
 }

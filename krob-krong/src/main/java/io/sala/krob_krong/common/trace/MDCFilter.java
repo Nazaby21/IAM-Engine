@@ -7,8 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
@@ -18,62 +17,44 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MDCFilter extends OncePerRequestFilter {
 
+    private static final Pattern SAFE_ID = Pattern.compile("[A-Za-z0-9._-]{1,64}");
+    private static final String ATTRIBUTE_PREFIX = MDCFilter.class.getName() + ".";
+
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request, HttpServletResponse response, @NonNull FilterChain chain)
+            @NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        String requestId = resolveRequestId(request);
+        String requestId = resolveId(request, TraceContext.REQUEST_ID_HEADER);
+        String traceId = resolveId(request, TraceContext.TRACE_ID_HEADER);
+
+        MDC.put(TraceContext.MDC_REQUEST_ID, requestId);
+        MDC.put(TraceContext.MDC_TRACE_ID, traceId);
+        response.setHeader(TraceContext.REQUEST_ID_HEADER, requestId);
+        response.setHeader(TraceContext.TRACE_ID_HEADER, traceId);
 
         try {
-            MDC.put(TraceContext.MDC_REQUEST_ID, requestId);
-
-            String earlyTraceId = resolveTraceId(request);
-            MDC.put(TraceContext.MDC_TRACE_ID, earlyTraceId);
-
-            response.setHeader(TraceContext.REQUEST_ID_HEADER, requestId);
-
             chain.doFilter(request, response);
-
-            String traceId = resolveTraceId(request);
-            MDC.put(TraceContext.MDC_TRACE_ID, traceId);
-            response.setHeader(TraceContext.TRACE_ID_HEADER, traceId);
-
-            String spanId = resolveSpanId();
-            if (ObjectUtils.isNotEmpty(spanId)) {
-                MDC.put(TraceContext.MDC_SPAN_ID, spanId);
-                response.setHeader(TraceContext.SPAN_ID_HEADER, spanId);
-            }
         } finally {
             MDC.remove(TraceContext.MDC_REQUEST_ID);
             MDC.remove(TraceContext.MDC_TRACE_ID);
-            MDC.remove(TraceContext.MDC_SPAN_ID);
         }
     }
 
-    private static String resolveRequestId(HttpServletRequest request) {
-        String header = request.getHeader(TraceContext.REQUEST_ID_HEADER);
-        return (StringUtils.isNotBlank(header)) ? header : UUID.randomUUID().toString();
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
     }
 
-    private static String resolveTraceId(HttpServletRequest request) {
-        String traceId = MDC.get(TraceContext.MDC_TRACE_ID);
-        if (StringUtils.isNotBlank(traceId)) return traceId;
+    private static String resolveId(HttpServletRequest request, String header) {
+        String attribute = ATTRIBUTE_PREFIX + header;
+        if (request.getAttribute(attribute) instanceof String existing) return existing;
 
-        traceId = MDC.get("traceId");
-        if (StringUtils.isNotBlank(traceId)) return traceId;
-
-        String header = request.getHeader(TraceContext.TRACE_ID_HEADER);
-        if (StringUtils.isNotBlank(header)) return header;
-
-        return UUID.randomUUID().toString();
-    }
-
-    private static String resolveSpanId() {
-        String spanId = MDC.get(TraceContext.MDC_SPAN_ID);
-        if (StringUtils.isNotBlank(spanId)) return spanId;
-
-        spanId = MDC.get("spanId");
-        return StringUtils.isNotBlank(spanId) ? spanId : null;
+        String value = request.getHeader(header);
+        String id = (value != null && SAFE_ID.matcher(value).matches())
+                ? value
+                : UUID.randomUUID().toString();
+        request.setAttribute(attribute, id);
+        return id;
     }
 }
