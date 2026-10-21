@@ -1,0 +1,12 @@
+info:
+  name: MFA
+  type: folder
+  seq: 7
+request:
+  auth: inherit
+docs:
+  content: Turns on authenticator-app (TOTP) MFA for the signed-in account, using access_token. Run Start
+    authenticator enrollment, add the returned secret or otpauth_uri to an authenticator app, set mfa_code to
+    the app's current code, then run Activate authenticator. Afterwards Login needs mfa_code. Super admins
+    must do this before their grant is created.
+  type: text/markdown

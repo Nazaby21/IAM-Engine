@@ -6,9 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +56,6 @@ public class SubjectEntity {
     @Column(name = "deleted_by")
     private UUID deletedBy;
 
-//    @CreationTimestamp
     @Column(name = "deleted_at")
-    private Instant deletedAt;
+    private OffsetDateTime deletedAt;
 }

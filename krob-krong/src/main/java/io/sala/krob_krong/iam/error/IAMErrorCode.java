@@ -6,7 +6,11 @@ import io.sala.krob_krong.common.errors.ErrorCode;
 public enum IAMErrorCode implements ErrorCode {
     EMAIL_ALREADY_REGISTERED(409, "That email address is already registered"),
     INVALID_CREDENTIALS(401, "Incorrect email or password"),
-    MFA_REQUIRED(403, "This account requires multi-factor authentication; password-only sign-in is unavailable"),
+    MFA_REQUIRED(403, "This account requires an authentication code from its authenticator app"),
+    INVALID_MFA_CODE(401, "The authentication code is incorrect or has already been used"),
+    MFA_LOCKED(429, "Too many incorrect authentication codes; try again later"),
+    MFA_ALREADY_ENABLED(409, "Multi-factor authentication is already enabled for this account"),
+    MFA_ENROLLMENT_NOT_FOUND(404, "Start authenticator enrollment before activating it"),
     ACCOUNT_SUSPENDED(403, "This account is suspended"),
 
     EMAIL_VERIFICATION_REQUIRED(403, "Verify your email before registering a school"),
@@ -35,6 +39,7 @@ public enum IAMErrorCode implements ErrorCode {
     PERMISSION_NOT_FOUND(404, "Permission not found"),
     ROLE_GRANT_NOT_ALLOWED(403, "You may not grant or revoke this role"),
     ROLE_ALREADY_HELD(409, "User already holds or has been invited to this role here"),
+    ROLE_NOT_GRANTABLE_HERE(400, "This role cannot be granted here"),
 
     NOT_A_MEMBER(403, "You are not a member of this school"),
     INVITATION_NOT_FOUND(404, "Invitation not found"),
@@ -53,9 +58,46 @@ public enum IAMErrorCode implements ErrorCode {
     INVALID_REFRESH_TOKEN(401, "The session has expired or is invalid"),
     REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again"),
 
+    EVENT_ALREADY_EXIST(400, "This event is already created"),
+    EVENT_DATE_CANNOT_BE_PAST(400, "This event cannot be in the past"),
+    EVENT_NOT_FOUND(400, "Event not found"),
+    EVENT_DATE_REQUIRED(400, "Event date is required"),
+
+    ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
+    ENROLLMENT_NOT_FOUND(400, "not found"),
+    CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
+    TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
+
+    PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
+
+    SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
+    SUBJECT_NOT_FOUND(404, "Subject not found"),
+    COURSE_NOT_FOUND(404, "Course not found"),
+    COURSE_ALREADY_EXISTS(400, "Course already exists"),
+    SUBJECT_NOT_IN_COURSE_BRANCH(400, "Subject does not belong to the course's branch"),
+    COURSE_SUBJECT_ALREADY_EXISTS(409, "Subject is already added to this course"),
+    COURSE_SUBJECT_CODE_ALREADY_EXISTS(409, "Code is already used in this course"),
+    COURSE_SUBJECT_NOT_FOUND(404, "Subject is not in this course"),
+    COURSE_SUBJECT_IN_USE(409, "Subject is used by class groups or assessments"),
+    COURSE_SUBJECT_INVALID_DATES(400, "End date must be on or after the start date"),
+    CLASS_GROUP_NAME_DUPLICATED(400, "Class group names must be unique"),
+    CLASS_GROUPS_CANNOT_HOLD_STUDENTS(400, "Total class group capacity is less than max students"),
+    CLASS_GROUP_EXCEEDS_ROOM_CAPACITY(400, "Group capacity exceeds the classroom capacity"),
+    CLASSROOM_NOT_FOUND(404, "Classroom not found"),
+    CLASSROOM_NOT_IN_COURSE_BRANCH(400, "Classroom does not belong to the course's branch"),
+    CLASS_GROUP_INSTRUCTOR_DUPLICATED(400, "Each class group must have a different instructor"),
+    CLASS_GROUP_NOT_FOUND(400, "Class Group not found"),
+    CLASS_GROUP_CLASSROOM_DUPLICATED(400, "Each classroom must have a different class group"),
+
+    // ---------- schedule ----------
+    SCHEDULE_INVALID_TIME(400, "End time must be after start time"),
+    SCHEDULE_OVERLAP(409, "Schedules overlap on the same day"),
+    SCHEDULE_NOT_FOUND(404, "Schedule not found"),
+    CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+
     INVALID_CLASS_STATUS(400,"Invalid class's status"),
     INVALID_CLASS_TYPE(400,"Invalid class's type"),
-    CLASSROOM_NOT_FOUND(404, "Classroom not found"),
 
     NOT_REQUIRED_FLOOR(400,"Floor is not allow for online class"),
     REQUIRED_FLOOR(400, "Floor is required for offline class");
@@ -89,6 +131,7 @@ public enum IAMErrorCode implements ErrorCode {
             case 401 -> ErrorCategory.AUTHENTICATION;
             case 403 -> ErrorCategory.AUTHORIZATION;
             case 404 -> ErrorCategory.NOT_FOUND;
+            case 400 -> ErrorCategory.BAD_REQUEST;
             default -> httpStatus < 500 ? ErrorCategory.VALIDATION : ErrorCategory.INTERNAL;
         };
     }

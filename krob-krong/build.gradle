@@ -56,6 +56,8 @@ dependencies {
 	// Common
 	implementation 'org.apache.commons:commons-lang3'
 
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
+
 	// Trace
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
@@ -70,6 +72,10 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 spotless {

@@ -6,8 +6,8 @@ info:
 request:
   auth: inherit
 docs:
-  content: Requires admin_access_token for a super_admin with enrolled MFA and an
-    MFA-verified session. Ordinary login cannot mint this token; the existing MFA
-    login flow is not implemented. This folder preserves the owner access_token. Approve,
+  content: Requires admin_access_token for a super_admin with MFA turned on. Run
+    Authentication → Admin login with the current mfa_code to get it. This folder
+    preserves the owner access_token. Approve,
     Request changes and Reject are alternatives, not a batch sequence.
   type: text/markdown

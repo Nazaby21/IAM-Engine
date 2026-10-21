@@ -22,7 +22,7 @@ public class EnrollmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private String id;
 
     @Column(name = "user_id")
     private UUID userId;

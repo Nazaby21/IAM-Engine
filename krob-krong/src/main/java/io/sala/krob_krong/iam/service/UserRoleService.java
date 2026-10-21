@@ -12,6 +12,8 @@ public interface UserRoleService {
 
     UserRoleResponse grantRole(UUID schoolId, GrantRoleRequest request, UUID actorId);
 
+    UserRoleResponse grantPlatformRole(GrantRoleRequest request, UUID actorId);
+
     UserRoleResponse acceptInvitation(UUID userRoleId, UUID actorId);
 
     UserRoleResponse revokeGrant(UUID userRoleId, String reason, UUID actorId);

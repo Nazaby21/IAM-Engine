@@ -97,7 +97,9 @@ class UserRoleControllerSecurityTest {
                 .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.error.category").value("AUTHENTICATION"))
                 .andExpect(jsonPath("$.request_id").isNotEmpty())
-                .andExpect(jsonPath("$.requestId").doesNotExist());
+                .andExpect(jsonPath("$.requestId").doesNotExist())
+                .andExpect(header().exists("X-Trace-ID"))
+                .andExpect(jsonPath("$.trace_id").isNotEmpty());
 
         verifyNoInteractions(userRoleService, accessPolicy);
     }
@@ -169,6 +171,30 @@ class UserRoleControllerSecurityTest {
                 .andExpect(status().isCreated());
 
         verify(userRoleService).grantRole(eq(schoolId), any(GrantRoleRequest.class), eq(userId));
+    }
+
+    @Test
+    void platformInviteNeedsATokenAndActsAsTheCaller() throws Exception {
+        UUID invitee = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        String body = "{\"user_id\":\"" + invitee + "\",\"role_id\":\"" + roleId + "\"}";
+
+        mvc.perform(post("/api/admin/members/invite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/admin/members/invite")
+                        .with(authentication(authenticated(userId)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated());
+
+        var request = ArgumentCaptor.forClass(GrantRoleRequest.class);
+        verify(userRoleService).grantPlatformRole(request.capture(), eq(userId));
+        org.assertj.core.api.Assertions.assertThat(request.getValue().getUserId())
+                .isEqualTo(invitee);
+        org.assertj.core.api.Assertions.assertThat(request.getValue().getRoleId())
+                .isEqualTo(roleId);
     }
 
     @Test

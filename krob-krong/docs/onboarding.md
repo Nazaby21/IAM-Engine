@@ -30,11 +30,10 @@ School profile updates use JSON; logo and cover uploads use multipart form data.
    change `workspace_slug` before claiming a name for it.
 
 **Admin authentication prerequisite:** review, suspension, reinstatement, and the admin directory require a
-super-admin grant, enrolled MFA, and a session whose signed claim confirms MFA. This repository's ordinary
-password login deliberately returns `MFA_REQUIRED` for enrolled accounts; an MFA enrollment/challenge/login
-API is still missing. Set `admin_access_token` only from a trusted MFA-capable authentication flow. The new
-review APIs enforce this requirement; there is no development bypass. Integration tests provision the
-reviewer and sign its MFA claim inside the test fixture only.
+super-admin grant, MFA turned on, and a session that signed in with an authenticator code. Set up the reviewer
+with [Super admin and role assignment](super-admin-and-roles.md), then run **Authentication → Admin login** with
+`admin_email`, the `admin_password` secret and the current `mfa_code` to store `admin_access_token`. The review
+APIs enforce this requirement; there is no development bypass.
 
 Bruno preserves the owner's `access_token` while review requests use `admin_access_token`. Approval,
 changes requested, and rejection are alternative actions. The collection is a manual stateful workflow,

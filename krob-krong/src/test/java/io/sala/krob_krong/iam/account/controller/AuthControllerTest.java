@@ -60,11 +60,14 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("User-Agent", "test-client")
                         .header("X-Forwarded-For", "spoofed")
+                        .header("X-Trace-ID", "upstream-trace-1")
                         .content("""
                     {"email":"person@example.com","display_name":"Normal Person","password":"long test passphrase"}
                     """))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Cache-Control", containsString("no-store")))
+                .andExpect(header().string("X-Trace-ID", "upstream-trace-1"))
+                .andExpect(jsonPath("$.trace_id").value("upstream-trace-1"))
                 .andExpect(jsonPath("$.data.token_type").value("Bearer"))
                 .andExpect(jsonPath("$.data.access_token").value("access"))
                 .andExpect(jsonPath("$.data.refresh_token").value("refresh"))
@@ -109,6 +112,18 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refresh_token\":\" \"}"))
                 .andExpect(status().isBadRequest());
+        verifyNoInteractions(auth);
+    }
+
+    @Test
+    void malformedMfaCodeIsRejectedBeforeTheService() throws Exception {
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {"email":"person@example.com","password":"long test passphrase","mfa_code":"12 34"}
+                    """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.details.fields.mfa_code").exists());
         verifyNoInteractions(auth);
     }
 
