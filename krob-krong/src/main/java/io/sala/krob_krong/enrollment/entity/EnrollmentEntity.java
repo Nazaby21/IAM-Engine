@@ -20,8 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "enrollment")
 public class EnrollmentEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false, unique = true)
     private String id;
 
     @Column(name = "user_id")
