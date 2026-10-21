@@ -1,8 +1,8 @@
 package io.sala.krob_krong.enrollment.service.impl;
 
 import io.sala.krob_krong.enrollment.service.TicketService;
+import io.sala.krob_krong.enrollment.utils.IdGenerator;
 import java.time.Duration;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -11,10 +11,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
     private final StringRedisTemplate redisTemplate;
+    private final IdGenerator idGenerator;
 
     @Override
     public String generate(String id) {
-        String ticketId = "TK-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String ticketId = idGenerator.getTicketId();
         Duration ttl = Duration.ofMinutes(1);
 
         redisTemplate.opsForValue().set("enrollment:ticket:" + ticketId, "PENDING", ttl);
