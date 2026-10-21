@@ -62,14 +62,16 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
-                                "/api/auth/verify-email")
+                                "/api/auth/verify-email",
+                                "/api/**")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/auth/verify-email",
                                 "/api/workspaces/*",
                                 "/api/schools/*",
-                                "/api/schools/*/media/*/content")
+                                "/api/schools/*/media/*/content",
+                                "/api/**")
                         .permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS)
                         .permitAll()

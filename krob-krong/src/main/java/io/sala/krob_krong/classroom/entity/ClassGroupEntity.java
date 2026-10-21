@@ -38,4 +38,10 @@ public class ClassGroupEntity {
 
     @Column(name = "status", length = 30, nullable = false)
     private String status;
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private UUID createdBy;
+
+    @Column(name = "updated_by")
+    private UUID updatedBy;
 }

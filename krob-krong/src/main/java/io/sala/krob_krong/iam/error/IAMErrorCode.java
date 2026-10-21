@@ -66,7 +66,33 @@ public enum IAMErrorCode implements ErrorCode {
     ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
     ENROLLMENT_NOT_FOUND(400, "not found"),
     CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
-    TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute");
+    TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
+
+    SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
+    SUBJECT_NOT_FOUND(404, "Subject not found"),
+    COURSE_NOT_FOUND(404, "Course not found"),
+    COURSE_ALREADY_EXISTS(400, "Course already exists"),
+    SUBJECT_NOT_IN_COURSE_BRANCH(400, "Subject does not belong to the course's branch"),
+    COURSE_SUBJECT_ALREADY_EXISTS(409, "Subject is already added to this course"),
+    COURSE_SUBJECT_CODE_ALREADY_EXISTS(409, "Code is already used in this course"),
+    COURSE_SUBJECT_NOT_FOUND(404, "Subject is not in this course"),
+    COURSE_SUBJECT_IN_USE(409, "Subject is used by class groups or assessments"),
+    COURSE_SUBJECT_INVALID_DATES(400, "End date must be on or after the start date"),
+    CLASS_GROUP_NAME_DUPLICATED(400, "Class group names must be unique"),
+    CLASS_GROUPS_CANNOT_HOLD_STUDENTS(400, "Total class group capacity is less than max students"),
+    CLASS_GROUP_EXCEEDS_ROOM_CAPACITY(400, "Group capacity exceeds the classroom capacity"),
+    CLASSROOM_NOT_FOUND(404, "Classroom not found"),
+    CLASSROOM_NOT_IN_COURSE_BRANCH(400, "Classroom does not belong to the course's branch"),
+    CLASS_GROUP_INSTRUCTOR_DUPLICATED(400, "Each class group must have a different instructor"),
+    CLASS_GROUP_NOT_FOUND(400, "Class Group not found"),
+    CLASS_GROUP_CLASSROOM_DUPLICATED(400, "Each classroom must have a different class group"),
+
+    // ---------- schedule ----------
+    SCHEDULE_INVALID_TIME(400, "End time must be after start time"),
+    SCHEDULE_OVERLAP(409, "Schedules overlap on the same day"),
+    SCHEDULE_NOT_FOUND(404, "Schedule not found"),
+    CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject");
 
     private final int httpStatus;
     private final String defaultMessage;
@@ -97,6 +123,7 @@ public enum IAMErrorCode implements ErrorCode {
             case 401 -> ErrorCategory.AUTHENTICATION;
             case 403 -> ErrorCategory.AUTHORIZATION;
             case 404 -> ErrorCategory.NOT_FOUND;
+            case 400 -> ErrorCategory.BAD_REQUEST;
             default -> httpStatus < 500 ? ErrorCategory.VALIDATION : ErrorCategory.INTERNAL;
         };
     }

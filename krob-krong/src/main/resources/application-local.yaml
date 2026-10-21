@@ -1,0 +1,4 @@
+postgres:
+  datasource:
+    username: postgres
+    password: Raalakama41
