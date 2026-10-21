@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.sala.krob_krong.account.dto.AuthResponse;
 import io.sala.krob_krong.account.dto.LoginRequest;
 import io.sala.krob_krong.account.dto.RegisterRequest;
-import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.account.service.AuthService;
 import io.sala.krob_krong.common.exceptions.KrobKrongException;
+import io.sala.krob_krong.course_subject.repository.UserRepository;
 import io.sala.krob_krong.iam.security.impl.TokenServiceImpl;
 import java.util.List;
 import java.util.UUID;
