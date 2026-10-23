@@ -28,6 +28,9 @@ public class PaymentValidator {
     public String validate(PaymentMakeRequest request) {
         String enrollmentId =
                 ticketService.getEnrollmentId(request.getTicketNumber());
+        if (!request.getCurrency().isValidAmount(request.getAmount())) {
+            throw new BusinessException(IAMErrorCode.INVALID_AMOUNT);
+        }
         boolean exists = paymentRepository
                 .existsByEnrollmentIdAndStatus(
                         enrollmentId,

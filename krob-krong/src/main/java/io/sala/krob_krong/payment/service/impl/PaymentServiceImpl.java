@@ -55,6 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentEntity save = paymentRepository.save(payment);
         PaymentResponse response = paymentMapper.toPayment(save);
         EnrollmentEntity enrollment = enrollmentValidator.findById(enrollmentId);
+        enrollment.setStatus(EnrollmentStatus.PROCESSING.name());
         response.setEnrollment(enrollmentMapper.toResponse(enrollment));
         EnrollmentResponse enrollmentResponse = enrollmentMapper.toResponse(enrollment);
         enrollmentResponse.setTicketNumber(ticketService.getTicketNumber(enrollmentId));
@@ -71,9 +72,9 @@ public class PaymentServiceImpl implements PaymentService {
         UUID actor = SchoolAccess.actor();
         payment.setUpdatedBy(actor);
         enrollment.setUpdatedBy(actor);
-        if (StringUtils.hasText(PaymentStatus.APPROVED.name())) {
+        if (status == PaymentStatus.APPROVED) {
             enrollment.setStatus(EnrollmentStatus.PAID.name());
-        } else if (StringUtils.hasText(PaymentStatus.REFUNDED.name())) {
+        } else if (status == PaymentStatus.REJECTED) {
             enrollment.setStatus(EnrollmentStatus.CANCELLED.name());
         }
         enrollmentRepository.save(enrollment);
@@ -87,7 +88,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse record(String paymentId) {
-
         PaymentEntity payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() ->
                         new BusinessException(IAMErrorCode.PAYMENT_NOT_FOUND));

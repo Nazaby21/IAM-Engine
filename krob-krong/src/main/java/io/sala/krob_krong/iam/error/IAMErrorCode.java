@@ -75,6 +75,7 @@ public enum IAMErrorCode implements ErrorCode {
     PAYMENT_ALREADY_VERIFIED(400, "payment already verified"),
     INVALID_PAYMENT_STATUS(400, "payment status is invalid"),
     INVALID_SECRET_KEY(400, "secret key is invalid"),
+    INVALID_AMOUNT (400, "amount is invalid"),
 
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),
