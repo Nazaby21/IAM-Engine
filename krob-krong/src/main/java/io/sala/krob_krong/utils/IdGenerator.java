@@ -1,9 +1,10 @@
-package io.sala.krob_krong.payment.utils;
+package io.sala.krob_krong.utils;
+
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
 
 @Component
 public class IdGenerator {
@@ -15,5 +16,12 @@ public class IdGenerator {
                 UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
 
         return "PAY-" + date + "-" + uuid;
+    }
+    public String enroll() {
+        return "ENROLL-"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+    }
+    public String getTicketId() {
+        return "TK-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     }
 }
