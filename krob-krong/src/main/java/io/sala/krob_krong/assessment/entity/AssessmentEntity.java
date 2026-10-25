@@ -1,7 +1,11 @@
 package io.sala.krob_krong.assessment.entity;
 
+import io.sala.krob_krong.common.constant.AssessmentStatus;
+import io.sala.krob_krong.common.constant.AssessmentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +36,8 @@ public class AssessmentEntity {
     private UUID subjectId;
 
     @Column(name = "type")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private AssessmentType type;
 
     @Column(name = "description")
     private String description;
@@ -53,7 +58,8 @@ public class AssessmentEntity {
     private BigDecimal percentage;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private AssessmentStatus status;
 
     @Column(name = "created_by")
     private UUID createdBy;
