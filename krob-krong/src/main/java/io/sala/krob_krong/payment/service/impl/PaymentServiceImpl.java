@@ -41,15 +41,18 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse makePayment(PaymentMakeRequest request) {
         paymentValidator.validate(request);
         String enrollmentId = ticketService.getEnrollmentId(request.getTicketNumber());
+        EnrollmentEntity enrollment = enrollmentValidator.findById(enrollmentId);
+        enrollmentValidator.isPending(enrollment, IAMErrorCode.INVALID_ENROLL_STATUS);
+        enrollmentValidator.validateCapacity(enrollment.getClassGroupId());
         PaymentEntity payment= paymentMapper.toEntity(request);
         UUID actor = SchoolAccess.actor();
         payment.setId(idGenerator.generatePaymentId());
         payment.setEnrollmentId(enrollmentId);
         payment.setStatus(PaymentStatus.PROCESSING.name());
         payment.setCreatedBy(actor);
+        enrollment.setUpdatedBy(actor);
         PaymentEntity save = paymentRepository.save(payment);
         PaymentResponse response = paymentMapper.toPayment(save);
-        EnrollmentEntity enrollment = enrollmentValidator.findById(enrollmentId);
         enrollment.setStatus(EnrollmentStatus.PROCESSING.name());
         response.setEnrollment(enrollmentMapper.toResponse(enrollment));
         EnrollmentResponse enrollmentResponse = enrollmentMapper.toResponse(enrollment);
