@@ -15,10 +15,6 @@ public class PaymentMakeRequest {
     @NotBlank(message="ticket number is required")
     private String ticketNumber;
 
-//    @JsonProperty("enrollment_id")
-//    @NotBlank(message = "enrollment id is required")
-//    private String enrollmentId;
-
     @JsonProperty("amount")
     @NotNull(message = "amount is required")
     private BigDecimal amount;
