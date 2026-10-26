@@ -101,7 +101,10 @@ public enum IAMErrorCode implements ErrorCode {
     SCHEDULE_OVERLAP(409, "Schedules overlap on the same day"),
     SCHEDULE_NOT_FOUND(404, "Schedule not found"),
     CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
-    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject");
+    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+    CLASS_GROUP_SCHEDULE_REQUIRED(400, "Class group must have at least one schedule"),
+    SCHEDULE_CLASS_GROUP_REQUIRED(400, "Schedule must have at least one class group"),
+    SCHEDULE_NAME_DUPLICATED(400, "Schedule name already exists in this course subject");
 
     private final int httpStatus;
     private final String defaultMessage;

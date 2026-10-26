@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sala.krob_krong.payment.constant.Currency;
 import io.sala.krob_krong.payment.constant.Method;
 import jakarta.validation.constraints.NotBlank;
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import lombok.Data;
 
 @Data
@@ -15,10 +14,6 @@ public class PaymentMakeRequest {
     @JsonProperty("ticket_number")
     @NotBlank(message="ticket number is required")
     private String ticketNumber;
-
-//    @JsonProperty("enrollment_id")
-//    @NotBlank(message = "enrollment id is required")
-//    private String enrollmentId;
 
     @JsonProperty("amount")
     @NotNull(message = "amount is required")

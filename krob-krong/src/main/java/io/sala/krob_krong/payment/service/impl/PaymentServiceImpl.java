@@ -21,13 +21,8 @@ import io.sala.krob_krong.payment.service.validator.PaymentValidator;
 import io.sala.krob_krong.school.service.SchoolAccess;
 import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.UUID;
 
 @Service
