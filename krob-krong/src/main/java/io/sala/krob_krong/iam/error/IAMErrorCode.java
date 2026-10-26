@@ -66,9 +66,11 @@ public enum IAMErrorCode implements ErrorCode {
     ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
     ENROLLMENT_NOT_FOUND(400, "not found"),
     CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
+    INVALID_ENROLL_STATUS(400, "enrollment invalid"),
 
     TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
     TICKET_NOT_FOUND(400, "ticket number is not found"),
+    CLASS_GROUP_FULL(400, "class is full"),
 
     PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
     PAYMENT_NOT_FOUND (400, "payment not found"),
