@@ -10,10 +10,9 @@ import io.sala.krob_krong.payment.service.PaymentService;
 import io.sala.krob_krong.payment.service.validator.PaymentValidator;
 import io.sala.krob_krong.school.service.SchoolAccess;
 import io.sala.krob_krong.utils.IdGenerator;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +24,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse makePayment(PaymentMakeRequest request) {
-        PaymentEntity payment= paymentMapper.toEntity(request);
+        PaymentEntity payment = paymentMapper.toEntity(request);
         UUID actor = SchoolAccess.actor();
         paymentValidator.validate(request);
         payment.setId(idGenerator.generatePaymentId());
         payment.setStatus(PaymentStatus.PROCESSING.name());
         payment.setCreatedBy(actor);
         PaymentEntity save = paymentRepository.save(payment);
-        return  paymentMapper.toPayment(save);
+        return paymentMapper.toPayment(save);
     }
 }

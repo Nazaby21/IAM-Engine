@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sala.krob_krong.payment.constant.Currency;
 import io.sala.krob_krong.payment.constant.Method;
 import jakarta.validation.constraints.NotBlank;
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import lombok.Data;
 
 @Data

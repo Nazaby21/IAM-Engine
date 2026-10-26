@@ -1,4 +1,5 @@
 package io.sala.krob_krong.course_subject.validator;
 
-public record GroupPlan() {
-}
+import java.util.UUID;
+
+public record GroupPlan(String name, UUID classroomId, UUID instructorId, int capacity) {}

@@ -5,8 +5,6 @@ import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectCreateRequest;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectUpdateRequest;
 import io.sala.krob_krong.course_subject.dto.response.CourseSubjectResponse;
-import io.sala.krob_krong.course_subject.dto.response.InstructorResponse;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +17,4 @@ public interface CourseSubjectService {
     CourseSubjectResponse update(UUID courseId, UUID subjectId, CourseSubjectUpdateRequest request);
 
     void remove(UUID courseId, UUID subjectId);
-
-    List<InstructorResponse> listInstructors(UUID branchId, String keyword);
 }

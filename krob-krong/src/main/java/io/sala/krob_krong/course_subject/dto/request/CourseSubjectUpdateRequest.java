@@ -1,14 +1,14 @@
 package io.sala.krob_krong.course_subject.dto.request;
 
-import jakarta.persistence.Column;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +21,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class CourseSubjectUpdateRequest {
-    private UUID instructorId;
 
     @Size(max = 50, message = "Code must not exceed 50 characters")
     private String code;
@@ -45,11 +44,11 @@ public class CourseSubjectUpdateRequest {
 
     private Boolean isPublic;
 
-    @Column(name = "max_students")
-    private Integer maxStudents;
+    @AssertTrue(message = "End date must be on or after the start date")
+    @Schema(hidden = true)
+    public boolean isDateRangeValid() {
+        return startedAt == null || endedAt == null || !endedAt.isBefore(startedAt);
+    }
 
-    private List<@Valid ClassGroupRequest> classGroups;
-
-    @Valid
-    private List<ScheduleRequest> schedules;
+    private List<@Valid ScheduleRequest> schedules;
 }

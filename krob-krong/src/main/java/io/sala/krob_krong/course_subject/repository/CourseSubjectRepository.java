@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,13 +22,18 @@ public interface CourseSubjectRepository
 
     boolean existsByIdCourseIdAndCodeAndIdSubjectIdNot(UUID courseId, String code, UUID subjectId);
 
-    @Query(value = """
-        SELECT EXISTS (SELECT 1 FROM class_group WHERE course_id = :courseId AND subject_id = :subjectId)
-            OR EXISTS (SELECT 1 FROM assessment  WHERE course_id = :courseId AND subject_id = :subjectId)
-        """, nativeQuery = true)
-    boolean isInUse(@Param("courseId") UUID courseId, @Param("subjectId") UUID subjectId);
+    // AFTER: assessments, and students enrolled in any group of this course_subject
+    @Query("""
+    select count(a) from AssessmentEntity a
+    where a.courseId = :courseId and a.subjectId = :subjectId
+    """)
+    long countAssessments(UUID courseId, UUID subjectId);
+
+    default boolean isInUse(UUID courseId, UUID subjectId) {
+        return countAssessments(courseId, subjectId) > 0;
+    }
 
     @Override
-    @EntityGraph(attributePaths = {"subject", "instructor"})
+    @EntityGraph(attributePaths = {"subject"})
     Page<CourseSubjectEntity> findAll(Specification<CourseSubjectEntity> spec, Pageable pageable);
 }
