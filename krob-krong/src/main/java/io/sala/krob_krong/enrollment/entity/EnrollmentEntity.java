@@ -30,6 +30,8 @@ public class EnrollmentEntity {
     @Column(name = "class_group_id")
     private UUID classGroupId;
 
+
+
     @Column(name = "status")
     private String status;
 

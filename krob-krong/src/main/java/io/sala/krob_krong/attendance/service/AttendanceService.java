@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AttendanceService {
-    List<AttendanceResponseDto> recordSessionAttendance(UUID branchId, UUID scheduleId, AttendanceRequestDto request);
+    AttendanceResponseDto recordSessionAttendance(AttendanceRequestDto request);
 }

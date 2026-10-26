@@ -13,18 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Repository
 public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UUID> {
     @Query(value = """
-            select exists(
+        select exists(
                 select 1 from attendance a
-                where a.schedule_id = :scheduleId
-                and a.enrollment_id in (:enrollmentIds)
-                and a.attendance_date = :attendanceDate
+                    where a.attendance_date = :attendanceDate
+                    and a.schedule_id = :scheduleId
+                    and a.student_id = :studentId
             )
-            """, nativeQuery = true)
-    boolean existsAttendance(
-            @PathVariable("scheduleId") UUID scheduleId,
-            @PathVariable("enrollmentIds") List<UUID> enrollmentIds,
-            LocalDate attendanceDate);
-
-
-
+    """, nativeQuery = true)
+    boolean existsAttendance(@Param("attendanceDate") LocalDate attendanceDate, @Param("studentId") UUID studentId, @Param("scheduleId" ) UUID scheduleId);
 }

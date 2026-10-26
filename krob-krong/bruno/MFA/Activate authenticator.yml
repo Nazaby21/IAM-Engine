@@ -1,0 +1,26 @@
+info:
+  name: Activate authenticator
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: "{{base_url}}/api/me/mfa/totp/activate"
+  body:
+    type: json
+    data: |-
+      {"code":"{{mfa_code}}"}
+  auth: inherit
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("responds 200", () => expect(res.status).to.equal(200));
+      test("MFA is on", () => expect(res.body.data.mfa_enabled_at).to.be.a("string"));
+settings:
+  encodeUrl: true
+  timeout: 30000
+  followRedirects: true
+  maxRedirects: 5
+docs: Set mfa_code to the authenticator app's current 6-digit code. Errors - 401 INVALID_MFA_CODE, 429
+  MFA_LOCKED after five wrong codes, 404 MFA_ENROLLMENT_NOT_FOUND before enrollment. Sign in again with
+  mfa_code afterwards; sessions started before MFA can no longer refresh.

@@ -12,7 +12,7 @@ public interface TokenService {
 
     long accessTtlSeconds();
 
-    IssuedRefresh issueRefreshToken(UUID userId, UUID sessionId, String userAgent, String ip);
+    IssuedRefresh issueRefreshToken(UUID userId, UUID sessionId, boolean mfaVerified, String userAgent, String ip);
 
     /** Lookup only; callers must validate again after acquiring the account lock before rotating. */
     RefreshTokenEntity findRefreshToken(String rawToken);

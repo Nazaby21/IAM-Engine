@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/schedule")
 public class ScheduleController {
     private final ScheduleService scheduleService;
+
     @PostMapping()
     public ApiResponse<ScheduleResponseDto> createSchedule(@RequestBody CreateScheduleRequestDto requestDto) {
         return ApiResponse.create(scheduleService.createSchedule(requestDto));
     }
-
 }

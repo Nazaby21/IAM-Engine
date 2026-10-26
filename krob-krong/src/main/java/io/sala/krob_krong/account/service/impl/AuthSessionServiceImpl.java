@@ -26,15 +26,15 @@ public class AuthSessionServiceImpl implements AuthSessionService {
     @Transactional
     public AuthResponse register(UserEntity user, String userAgent, String ip) {
         users.saveAndFlush(user);
-        return issue(user, tokens.issueRefreshToken(user.getId(), null, userAgent, ip));
+        return issue(user, tokens.issueRefreshToken(user.getId(), null, false, userAgent, ip));
     }
 
     @Override
     @Transactional
-    public AuthResponse login(UUID userId, String userAgent, String ip) {
+    public AuthResponse login(UUID userId, boolean mfaVerified, String userAgent, String ip) {
         UserEntity user = lockUser(userId);
-        requireNormalUser(user);
-        return issue(user, tokens.issueRefreshToken(userId, null, userAgent, ip));
+        requireNormalUser(user, mfaVerified);
+        return issue(user, tokens.issueRefreshToken(userId, null, mfaVerified, userAgent, ip));
     }
 
     @Override
@@ -47,8 +47,9 @@ public class AuthSessionServiceImpl implements AuthSessionService {
         if (!userId.equals(previous.getUserId())) {
             throw new BusinessException(IAMErrorCode.INVALID_REFRESH_TOKEN);
         }
-        requireNormalUser(user);
-        IssuedRefresh next = tokens.issueRefreshToken(userId, previous.getFamilyId(), userAgent, ip);
+        requireNormalUser(user, previous.isMfaVerified());
+        IssuedRefresh next =
+                tokens.issueRefreshToken(userId, previous.getFamilyId(), previous.isMfaVerified(), userAgent, ip);
         AuthResponse response = issue(user, next);
         tokens.markRotated(previous, next.getEntity().getId());
         return response;
@@ -59,14 +60,14 @@ public class AuthSessionServiceImpl implements AuthSessionService {
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.INVALID_CREDENTIALS));
     }
 
-    private static void requireNormalUser(UserEntity user) {
+    private static void requireNormalUser(UserEntity user, boolean mfaVerified) {
         if (!user.isPerson()) {
             throw new BusinessException(IAMErrorCode.INVALID_CREDENTIALS);
         }
         if (!user.isActive()) {
             throw new BusinessException(IAMErrorCode.ACCOUNT_SUSPENDED);
         }
-        if (user.getMfaEnabledAt() != null) {
+        if (user.getMfaEnabledAt() != null && !mfaVerified) {
             throw new BusinessException(IAMErrorCode.MFA_REQUIRED);
         }
     }
@@ -78,7 +79,7 @@ public class AuthSessionServiceImpl implements AuthSessionService {
                 .kind("person")
                 .email(user.getEmail())
                 .displayName(user.getDisplayName())
-                .mfaVerified(false)
+                .mfaVerified(refresh.getEntity().isMfaVerified() && user.getMfaEnabledAt() != null)
                 .build());
         return AuthResponse.builder()
                 .userId(user.getId())

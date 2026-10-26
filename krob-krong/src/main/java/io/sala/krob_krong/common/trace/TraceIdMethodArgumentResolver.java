@@ -16,7 +16,7 @@ public class TraceIdMethodArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasMethodAnnotation(RequestId.class) || parameter.hasMethodAnnotation(TraceId.class);
+        return parameter.hasParameterAnnotation(RequestId.class) || parameter.hasParameterAnnotation(TraceId.class);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class TraceIdMethodArgumentResolver implements HandlerMethodArgumentResol
             return (StringUtils.isNotBlank(requestId)) ? requestId : "unknown";
         }
         if (parameter.hasParameterAnnotation(TraceId.class)) {
-            return MDC.get(TraceContext.MDC_TRACE_ID); // may be null
+            return MDC.get(TraceContext.MDC_TRACE_ID);
         }
         return null;
     }

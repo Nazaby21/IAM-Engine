@@ -33,8 +33,8 @@ public class ClassGroupEntity {
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "capacity")
-    private int capacity;
+    @Column(nullable = false)
+    private Integer capacity = 0;
 
     @Column(name = "status", length = 30, nullable = false)
     private String status;

@@ -6,7 +6,11 @@ import io.sala.krob_krong.common.errors.ErrorCode;
 public enum IAMErrorCode implements ErrorCode {
     EMAIL_ALREADY_REGISTERED(409, "That email address is already registered"),
     INVALID_CREDENTIALS(401, "Incorrect email or password"),
-    MFA_REQUIRED(403, "This account requires multi-factor authentication; password-only sign-in is unavailable"),
+    MFA_REQUIRED(403, "This account requires an authentication code from its authenticator app"),
+    INVALID_MFA_CODE(401, "The authentication code is incorrect or has already been used"),
+    MFA_LOCKED(429, "Too many incorrect authentication codes; try again later"),
+    MFA_ALREADY_ENABLED(409, "Multi-factor authentication is already enabled for this account"),
+    MFA_ENROLLMENT_NOT_FOUND(404, "Start authenticator enrollment before activating it"),
     ACCOUNT_SUSPENDED(403, "This account is suspended"),
 
     EMAIL_VERIFICATION_REQUIRED(403, "Verify your email before registering a school"),
@@ -33,12 +37,17 @@ public enum IAMErrorCode implements ErrorCode {
     STUDENT_NOT_FOUND(404, "Student not found"),
     DUPLICATE_STUDENT_ID(409, "Duplicate student id are not allowed"),
     DUPLICATE_ATTENDANCE(409, "Duplicate attendance are not allowed"),
-    CLASSROOM_AND_CLASS_GROUP_NOT_FOUND(404, "Classroom and class group not found"),
+    CLASS_GROUP_NOT_FOUND(404, "Class group not found"),
+    CLASSROOM_NOT_FOUND(404, "Class room not found"),
+    DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
+    SCHEDULE_NOT_FOUND(404, "Schedule not found"),
+    STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),
     ROLE_GRANT_NOT_ALLOWED(403, "You may not grant or revoke this role"),
     ROLE_ALREADY_HELD(409, "User already holds or has been invited to this role here"),
+    ROLE_NOT_GRANTABLE_HERE(400, "This role cannot be granted here"),
 
     NOT_A_MEMBER(403, "You are not a member of this school"),
     INVITATION_NOT_FOUND(404, "Invitation not found"),

@@ -32,8 +32,8 @@ public class AttendanceEntity {
     @Column(name = "schedule_id")
     private UUID scheduleId;
 
-    @Column(name = "enrollment_id")
-    private UUID enrollmentId;
+    @Column(name = "student_id")
+    private UUID studentId;
 
     @Column(name = "status")
     private String status;

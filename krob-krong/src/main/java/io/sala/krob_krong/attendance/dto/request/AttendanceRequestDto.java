@@ -19,6 +19,10 @@ public class AttendanceRequestDto {
     @JsonProperty("attendance_date")
     private LocalDate attendanceDate;
 
+    @NotNull
+    @JsonProperty("schedule_id")
+    private UUID scheduleId;
+
     @NotEmpty
     @JsonProperty("records")
     private List<StudentRequestRecord> records;
