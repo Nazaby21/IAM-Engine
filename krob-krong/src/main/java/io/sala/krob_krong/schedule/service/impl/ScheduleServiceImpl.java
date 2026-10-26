@@ -1,5 +1,6 @@
 package io.sala.krob_krong.schedule.service.impl;
 
+import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.classroom.repository.ClassGroupRepository;
 import io.sala.krob_krong.classroom.repository.ClassroomRepository;
 import io.sala.krob_krong.common.enumz.DayOfWeeks;
@@ -7,7 +8,6 @@ import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.schedule.dto.request.CreateScheduleRequestDto;
 import io.sala.krob_krong.schedule.dto.response.ScheduleResponseDto;
-import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import io.sala.krob_krong.schedule.mapper.ScheduleMapper;
 import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import io.sala.krob_krong.schedule.service.ScheduleService;
@@ -59,9 +59,6 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
 
             ScheduleEntity entity = ScheduleEntity.builder()
-                    .classGroupId(classGroupId)
-                    .classroomId(item.getClassroomId())
-                    .dayOfWeek(item.getDayOfWeek().name())
                     .startedTime(item.getStartedTime())
                     .endedTime(item.getEndedTime())
                     .description(requestDto.getDescription())
@@ -79,8 +76,6 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .schedule(savedEntities.stream()
                         .map(entity -> ScheduleResponseDto.data
                                 .builder()
-                                .classroomId(entity.getClassroomId())
-                                .dayOfWeek(DayOfWeeks.valueOf(entity.getDayOfWeek()))
                                 .startedTime(entity.getStartedTime())
                                 .endedTime(entity.getEndedTime())
                                 .build())

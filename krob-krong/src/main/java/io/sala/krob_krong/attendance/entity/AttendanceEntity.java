@@ -48,7 +48,7 @@ public class AttendanceEntity {
     private UUID createdBy;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_by")

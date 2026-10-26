@@ -37,10 +37,8 @@ public enum IAMErrorCode implements ErrorCode {
     STUDENT_NOT_FOUND(404, "Student not found"),
     DUPLICATE_STUDENT_ID(409, "Duplicate student id are not allowed"),
     DUPLICATE_ATTENDANCE(409, "Duplicate attendance are not allowed"),
-    CLASS_GROUP_NOT_FOUND(404, "Class group not found"),
     CLASSROOM_NOT_FOUND(404, "Class room not found"),
     DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
-    SCHEDULE_NOT_FOUND(404, "Schedule not found"),
     STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
@@ -64,7 +62,54 @@ public enum IAMErrorCode implements ErrorCode {
     SUPPORT_MFA_REQUIRED(403, "Platform roles require MFA"),
 
     INVALID_REFRESH_TOKEN(401, "The session has expired or is invalid"),
-    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again");
+    REFRESH_TOKEN_REUSE(401, "This session was revoked for security reasons; please sign in again"),
+
+    EVENT_ALREADY_EXIST(400, "This event is already created"),
+    EVENT_DATE_CANNOT_BE_PAST(400, "This event cannot be in the past"),
+    EVENT_NOT_FOUND(400, "Event not found"),
+    EVENT_DATE_REQUIRED(400, "Event date is required"),
+
+    ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
+    ENROLLMENT_NOT_FOUND(400, "not found"),
+    CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
+
+    TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
+    TICKET_NOT_FOUND(400, "ticket number is not found"),
+
+    PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
+    PAYMENT_NOT_FOUND (400, "payment not found"),
+    PAYMENT_ALREADY_VERIFIED(400, "payment already verified"),
+    INVALID_PAYMENT_STATUS(400, "payment status is invalid"),
+    INVALID_SECRET_KEY(400, "secret key is invalid"),
+    INVALID_AMOUNT (400, "amount is invalid"),
+
+    SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
+    SUBJECT_NOT_FOUND(404, "Subject not found"),
+    COURSE_NOT_FOUND(404, "Course not found"),
+    COURSE_ALREADY_EXISTS(400, "Course already exists"),
+    SUBJECT_NOT_IN_COURSE_BRANCH(400, "Subject does not belong to the course's branch"),
+    COURSE_SUBJECT_ALREADY_EXISTS(409, "Subject is already added to this course"),
+    COURSE_SUBJECT_CODE_ALREADY_EXISTS(409, "Code is already used in this course"),
+    COURSE_SUBJECT_NOT_FOUND(404, "Subject is not in this course"),
+    COURSE_SUBJECT_IN_USE(409, "Subject is used by class groups or assessments"),
+    COURSE_SUBJECT_INVALID_DATES(400, "End date must be on or after the start date"),
+    CLASS_GROUP_NAME_DUPLICATED(400, "Class group names must be unique"),
+    CLASS_GROUPS_CANNOT_HOLD_STUDENTS(400, "Total class group capacity is less than max students"),
+    CLASS_GROUP_EXCEEDS_ROOM_CAPACITY(400, "Group capacity exceeds the classroom capacity"),
+    CLASSROOM_NOT_IN_COURSE_BRANCH(400, "Classroom does not belong to the course's branch"),
+    CLASS_GROUP_INSTRUCTOR_DUPLICATED(400, "Each class group must have a different instructor"),
+    CLASS_GROUP_NOT_FOUND(400, "Class Group not found"),
+    CLASS_GROUP_CLASSROOM_DUPLICATED(400, "Each classroom must have a different class group"),
+
+    // ---------- schedule ----------
+    SCHEDULE_INVALID_TIME(400, "End time must be after start time"),
+    SCHEDULE_OVERLAP(409, "Schedules overlap on the same day"),
+    SCHEDULE_NOT_FOUND(404, "Schedule not found"),
+    CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+    INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
+    CLASS_GROUP_SCHEDULE_REQUIRED(400, "Class group must have at least one schedule"),
+    SCHEDULE_CLASS_GROUP_REQUIRED(400, "Schedule must have at least one class group"),
+    SCHEDULE_NAME_DUPLICATED(400, "Schedule name already exists in this course subject");
 
     private final int httpStatus;
     private final String defaultMessage;
@@ -95,6 +140,7 @@ public enum IAMErrorCode implements ErrorCode {
             case 401 -> ErrorCategory.AUTHENTICATION;
             case 403 -> ErrorCategory.AUTHORIZATION;
             case 404 -> ErrorCategory.NOT_FOUND;
+            case 400 -> ErrorCategory.BAD_REQUEST;
             default -> httpStatus < 500 ? ErrorCategory.VALIDATION : ErrorCategory.INTERNAL;
         };
     }

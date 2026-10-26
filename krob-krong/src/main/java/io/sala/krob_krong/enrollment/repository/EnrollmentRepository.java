@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Repository
-public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, UUID> {
+public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, String> {
     @Query(value = """
                 select e.* from enrollment e
                 join schedule s

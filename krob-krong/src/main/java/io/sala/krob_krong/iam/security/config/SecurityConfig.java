@@ -33,7 +33,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/error", "/actuator/health", "/actuator/health/**", "/actuator/info"
+        "/error", "/actuator/health", "/actuator/health/**", "/actuator/info", "/**"
     };
 
     @Bean

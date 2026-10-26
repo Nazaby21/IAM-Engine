@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 import io.sala.krob_krong.iam.error.IAMErrorCode;
-import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
