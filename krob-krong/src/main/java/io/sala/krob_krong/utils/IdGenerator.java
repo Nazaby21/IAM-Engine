@@ -25,4 +25,8 @@ public class IdGenerator {
     public String getTicketId() {
         return "TK-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     }
+
+    public String getAnnounceId() {
+        return "ANN-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
 }

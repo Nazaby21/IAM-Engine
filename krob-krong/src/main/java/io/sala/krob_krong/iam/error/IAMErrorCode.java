@@ -79,6 +79,8 @@ public enum IAMErrorCode implements ErrorCode {
     INVALID_SECRET_KEY(400, "secret key is invalid"),
     INVALID_AMOUNT (400, "amount is invalid"),
 
+    ANN_NOT_FOUND(400, "announcement is not found"),
+
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),
     COURSE_NOT_FOUND(404, "Course not found"),
