@@ -12,7 +12,6 @@ import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
 import io.sala.krob_krong.score.entity.ScoreEntity;
 import io.sala.krob_krong.score.repository.ScoreRepository;
 import io.sala.krob_krong.score.service.ScoreService;
-
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -21,12 +20,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -37,7 +34,6 @@ public class ScoreServiceImpl implements ScoreService {
     private final AssessmentRepository assessmentRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public PageResponse<ScoreResponse> list(UUID schoolId, UUID assessmentId, PageRequest pageRequest) {
         if (!assessmentRepository.existsInSchool(assessmentId, schoolId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
@@ -55,7 +51,6 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     @Override
-    @Transactional
     public SaveScoresResponse save(UUID schoolId, UUID assessmentId, SaveScoresRequest request) {
         AssessmentEntity assessment = assessmentRepository.findInSchool(assessmentId, schoolId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found"));
@@ -108,6 +103,9 @@ public class ScoreServiceImpl implements ScoreService {
 
     @Override
     public PageResponse<StudentScoreResponse> listByStudent(UUID schoolId, UUID studentId, PageRequest pageRequest) {
-        return null;
+        if (!assessmentRepository.existsInSchool(studentId, schoolId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
+        }
+        return PageResponse.from(scoreRepository.findByStudentId(studentId, pageRequest.toSpring()));
     }
 }

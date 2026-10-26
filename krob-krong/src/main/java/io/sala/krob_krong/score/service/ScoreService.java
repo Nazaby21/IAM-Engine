@@ -16,4 +16,5 @@ public interface ScoreService {
     SaveScoresResponse save(UUID schoolId, UUID assessmentId, SaveScoresRequest request);
 
     PageResponse<StudentScoreResponse> listByStudent(UUID schoolId, UUID studentId, PageRequest pageRequest);
+
 }

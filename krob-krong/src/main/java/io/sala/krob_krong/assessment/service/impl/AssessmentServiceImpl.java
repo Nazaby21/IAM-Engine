@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
@@ -29,12 +28,10 @@ import org.springframework.web.server.ResponseStatusException;
 public class AssessmentServiceImpl implements AssessmentService {
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Phnom_Penh");
-
     private final AssessmentRepository assessmentRepository;
     private final CourseSubjectRepository courseSubjectRepository;
 
     @Override
-    @Transactional
     public CreateAssessmentResponse create(
             UUID schoolId, UUID courseId, UUID subjectId, CreateAssessmentRequest request) {
         checkCourseSubject(schoolId, courseId, subjectId);
@@ -60,7 +57,6 @@ public class AssessmentServiceImpl implements AssessmentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResponse<CreateAssessmentResponse> list(
             UUID schoolId, UUID courseId, UUID subjectId, AssessmentType type, PageRequest pageRequest) {
         checkCourseSubject(schoolId, courseId, subjectId);
@@ -102,7 +98,6 @@ public class AssessmentServiceImpl implements AssessmentService {
     }
 
     @Override
-    @Transactional
     public void delete(UUID schoolId, UUID assessmentId) {
         AssessmentEntity entity = assessmentRepository
                 .findInSchool(assessmentId, schoolId)

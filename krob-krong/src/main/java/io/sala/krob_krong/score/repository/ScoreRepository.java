@@ -2,7 +2,6 @@ package io.sala.krob_krong.score.repository;
 
 import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
 import io.sala.krob_krong.score.entity.ScoreEntity;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -22,17 +21,16 @@ public interface ScoreRepository extends JpaRepository<ScoreEntity, UUID> {
     select distinct e.userId
     from EnrollmentEntity e, ClassGroupEntity g
     where g.id = e.classGroupId
-      and g.courseId = :courseId
-      and g.subjectId = :subjectId
-      and e.userId in :studentIds
+    and g.schedule.courseId = :courseId
+    and g.schedule.subjectId = :subjectId
+    and e.userId in :studentIds
     """)
     Set<UUID> findEnrolledStudentIds(@Param("courseId") UUID courseId,
                                      @Param("subjectId") UUID subjectId,
                                      @Param("studentIds") Collection<UUID> studentIds);
 
-
     @Query(value = """
-    select new io.sala.krob_krong.score.dto.StudentScoreResponse(
+    select new io.sala.krob_krong.score.dto.response.StudentScoreResponse(
         s.studentId, s.score, s.grade, a.id, a.description)
     from ScoreEntity s, AssessmentEntity a
     where a.id = s.assessmentId
