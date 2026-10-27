@@ -11,11 +11,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CourseSubjectRepository
-        extends JpaRepository<CourseSubjectEntity, CourseSubjectCompensationId>,
+public interface CourseSubjectRepository extends JpaRepository<CourseSubjectEntity, CourseSubjectCompensationId>,
                 JpaSpecificationExecutor<CourseSubjectEntity> {
     boolean existsByIdCourseIdAndCode(
             UUID courseId, @Size(max = 50, message = "Code must not exceed 50 characters") String code);
@@ -36,4 +36,16 @@ public interface CourseSubjectRepository
     @Override
     @EntityGraph(attributePaths = {"subject"})
     Page<CourseSubjectEntity> findAll(Specification<CourseSubjectEntity> spec, Pageable pageable);
+
+    @Query("""
+    select count(cs) > 0
+    from CourseSubjectEntity cs, CourseEntity c, BranchEntity b
+    where cs.id.courseId = :courseId
+      and cs.id.subjectId = :subjectId
+      and c.id = cs.id.courseId
+      and b.id = c.branchId
+      and b.schoolId = :schoolId
+    """)
+    boolean existsInSchool(
+            @Param("courseId") UUID courseId, @Param("subjectId") UUID subjectId, @Param("schoolId") UUID schoolId);
 }
