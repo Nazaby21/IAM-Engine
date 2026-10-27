@@ -20,9 +20,8 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "announcement")
 public class AnnouncementEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
-    private UUID id;
+    @Column(name = "id", nullable = false, unique = true)
+    private String id;
 
     @Column(name = "school_id")
     private UUID schoolId;
@@ -45,6 +44,15 @@ public class AnnouncementEntity {
     @Column(name = "attachment")
     private String attachment;
 
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "scheduled_at")
+    private Instant scheduledAt;
+
+    @Column(name = "published_at")
+    private Instant publishedAt;
+
     @Column(name = "created_by")
     private UUID createdBy;
 
@@ -59,10 +67,4 @@ public class AnnouncementEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @Column(name = "deleted_by")
-    private UUID deletedBy;
-
-    @CreationTimestamp
-    @Column(name = "deleted_at")
-    private Instant deletedAt;
 }

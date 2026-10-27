@@ -1,7 +1,6 @@
 package io.sala.krob_krong.course_subject.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
@@ -27,8 +26,6 @@ public class CourseSubjectCreateRequest {
 
     @NotNull(message = "Subject is required")
     private UUID subjectId;
-
-    private UUID instructorId;
 
     @Size(max = 50, message = "Code must not exceed 50 characters")
     private String code;
@@ -59,12 +56,6 @@ public class CourseSubjectCreateRequest {
     public boolean isDateRangeValid() {
         return startedAt == null || endedAt == null || !endedAt.isBefore(startedAt);
     }
-
-    @Column(name = "max_students")
-    private Integer maxStudents;
-
-    @Valid
-    private List<ClassGroupRequest> classGroups;
 
     @Valid
     private List<ScheduleRequest> schedules;
