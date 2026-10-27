@@ -63,7 +63,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public CountdownResponse getCountdown(UUID id) {
-        EventEntity event = eventValidator.findById(id);
+        EventEntity event =
+                eventRepository.findById(id).orElseThrow(() -> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
         CountdownResponse response = eventMapper.toCountdown(event);
         LocalDate today = LocalDate.now();
         LocalDate eventDate = event.getEventDate();
@@ -74,11 +75,5 @@ public class EventServiceImpl implements EventService {
         response.setDaysRemaining(dayRemaining);
 
         return response;
-    }
-
-    @Override
-    public EventResponse getById(UUID id) {
-        EventEntity event = eventValidator.findById(id);
-        return eventMapper.toResponse(event);
     }
 }

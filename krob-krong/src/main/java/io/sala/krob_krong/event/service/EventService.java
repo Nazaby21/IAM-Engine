@@ -16,6 +16,4 @@ public interface EventService {
     EventResponse create(UUID schoolId, EventCreateRequest request);
 
     CountdownResponse getCountdown(UUID id);
-
-    EventResponse getById(UUID ID);
 }

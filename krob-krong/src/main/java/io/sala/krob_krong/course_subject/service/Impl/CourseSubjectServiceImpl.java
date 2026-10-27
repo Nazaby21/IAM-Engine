@@ -1,10 +1,12 @@
 package io.sala.krob_krong.course_subject.service.Impl;
 
 import io.sala.krob_krong.account.entity.UserEntity;
-import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.attendance.entity.repository.ScheduleRepository;
 import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
+import io.sala.krob_krong.classroom.entity.ClassroomEntity;
+import io.sala.krob_krong.classroom.repository.ClassGroupRepository;
+import io.sala.krob_krong.classroom.repository.ClassroomRepository;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
@@ -14,24 +16,20 @@ import io.sala.krob_krong.course_subject.dto.request.ClassGroupRequest;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectCreateRequest;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectUpdateRequest;
 import io.sala.krob_krong.course_subject.dto.request.ScheduleRequest;
+import io.sala.krob_krong.course_subject.dto.response.ClassGroupResponse;
 import io.sala.krob_krong.course_subject.dto.response.CourseSubjectResponse;
-import io.sala.krob_krong.course_subject.dto.response.ScheduleResponse;
+import io.sala.krob_krong.course_subject.dto.response.InstructorResponse;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectCompensationId;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectEntity;
 import io.sala.krob_krong.course_subject.mapper.CourseSubjectMapper;
 import io.sala.krob_krong.course_subject.repository.CourseSubjectRepository;
+import io.sala.krob_krong.account.repository.UserRepository;
 import io.sala.krob_krong.course_subject.service.CourseSubjectService;
 import io.sala.krob_krong.course_subject.specification.CourseSubjectListSpec;
-import io.sala.krob_krong.course_subject.validator.CourseSubjectValidator;
-import io.sala.krob_krong.course_subject.validator.GroupPlan;
-import io.sala.krob_krong.course_subject.validator.SchedulePlan;
 import io.sala.krob_krong.course_subject.validator.ScheduleValidator;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.subject.entity.SubjectEntity;
 import io.sala.krob_krong.subject.repository.SubjectRepository;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -59,9 +58,12 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
     private final CourseRepository courseRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
-    private final CourseSubjectValidator courseSubjectValidator;
+    private final ClassGroupRepository classGroupRepository;
+    private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
     private final ScheduleValidator scheduleValidator;
+
+    // ---------- queries ----------
 
     @Override
     @Transactional(readOnly = true)
@@ -72,14 +74,32 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
 
         Pageable pageable = page.toSpring(Sort.by(Sort.Direction.DESC, CourseSubjectEntity.Fields.code));
 
+        Map<UUID, List<ClassGroupEntity>> groupsBySubject = classGroupRepository.findByCourseId(courseId).stream()
+                .collect(Collectors.groupingBy(ClassGroupEntity::getSubjectId));
+
         Map<UUID, List<ScheduleEntity>> schedulesBySubject = scheduleRepository.findByCourseId(courseId).stream()
                 .collect(Collectors.groupingBy(ScheduleEntity::getSubjectId));
 
-        return PageResponse.from(courseSubjectRepository
-                .findAll(spec, pageable)
-                .map(e ->
-                        toResponse(e, schedulesBySubject.getOrDefault(e.getId().getSubjectId(), List.of()))));
+        return PageResponse.from(courseSubjectRepository.findAll(spec, pageable).map(e -> {
+            UUID sid = e.getId().getSubjectId();
+            return toResponse(
+                    e, groupsBySubject.getOrDefault(sid, List.of()), schedulesBySubject.getOrDefault(sid, List.of()));
+        }));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InstructorResponse> listInstructors(UUID branchId, String keyword) {
+        String pattern = (keyword == null || keyword.isBlank())
+                ? "%"
+                : "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
+
+        return userRepository.findInstructors(branchId, pattern).stream()
+                .map(courseSubjectMapper::toInstructor)
+                .toList();
+    }
+
+    // ---------- commands ----------
 
     @Override
     @Transactional
@@ -103,24 +123,22 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
                 && courseSubjectRepository.existsByIdCourseIdAndCode(courseId, request.getCode())) {
             throw new BusinessException(IAMErrorCode.COURSE_SUBJECT_CODE_ALREADY_EXISTS);
         }
-        courseSubjectValidator.validateDates(request.getStartedAt(), request.getEndedAt());
 
-        // validate everything BEFORE saving anything
-        List<SchedulePlan> plans = planSchedules(List.of(), request.getSchedules());
-        courseSubjectValidator.validateSchedules(course, request.getSchedules(), plans);
-        scheduleValidator.validate(courseId, subjectId, request.getStartedAt(), request.getEndedAt(), plans);
+        // validate groups and schedules BEFORE saving anything
+        List<ClassGroupEntity> groups = buildClassGroups(
+                course, id, request.getClassGroups(), request.getInstructorId(), request.getMaxStudents(), List.of());
+        List<ScheduleEntity> schedules = buildSchedules(id, request.getSchedules(), List.of(), groups);
 
         CourseSubjectEntity entity = courseSubjectMapper.toEntity(request);
         entity.setId(id);
         entity.setStatus(normalizeStatus(request.getStatus()));
         entity.setIsPublic(Boolean.TRUE.equals(request.getIsPublic()));
         entity.setSubject(subject);
+        entity.setInstructor(findInstructor(request.getInstructorId()));
 
-        // schedule has an FK to course_subject, so insert the link first
+        // class_group and schedule have FKs to course_subject, so insert the link first
         CourseSubjectEntity saved = courseSubjectRepository.saveAndFlush(entity);
-        List<ScheduleEntity> schedules =
-                scheduleRepository.saveAll(applySchedules(id, List.of(), request.getSchedules()));
-        return toResponse(saved, schedules);
+        return toResponse(saved, classGroupRepository.saveAll(groups), scheduleRepository.saveAll(schedules));
     }
 
     @Override
@@ -140,19 +158,41 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
         if (request.getStatus() != null) {
             entity.setStatus(normalizeStatus(request.getStatus()));
         }
-        courseSubjectValidator.validateDates(entity.getStartedAt(), entity.getEndedAt());
+        if (request.getInstructorId() != null) {
+            entity.setInstructor(findInstructor(request.getInstructorId()));
+        }
+        if (entity.getStartedAt() != null
+                && entity.getEndedAt() != null
+                && entity.getEndedAt().isBefore(entity.getStartedAt())) {
+            throw new BusinessException(IAMErrorCode.COURSE_SUBJECT_INVALID_DATES);
+        }
 
-        // existing schedules + incoming changes are validated together
-        List<ScheduleEntity> existing = scheduleRepository.findByCourseIdAndSubjectId(courseId, subjectId);
-        List<SchedulePlan> plans = planSchedules(existing, request.getSchedules());
-        courseSubjectValidator.validateSchedules(course, request.getSchedules(), plans);
-        // also re-checks other course_subjects when only the dates changed
-        scheduleValidator.validate(courseId, subjectId, entity.getStartedAt(), entity.getEndedAt(), plans);
+        // incoming groups are validated together with the existing ones
+        List<ClassGroupEntity> existing = classGroupRepository.findByCourseIdAndSubjectId(courseId, subjectId);
+        List<ClassGroupEntity> incoming = buildClassGroups(
+                course,
+                entity.getId(),
+                request.getClassGroups(),
+                entity.getInstructorId(),
+                entity.getMaxStudents(),
+                existing);
+
+        // schedules are validated against every group (existing + edited/new)
+        List<ClassGroupEntity> effectiveGroups =
+                Stream.concat(existing.stream(), incoming.stream()).distinct().toList();
+        List<ScheduleEntity> existingSchedules = scheduleRepository.findByCourseIdAndSubjectId(courseId, subjectId);
+        List<ScheduleEntity> incomingSchedules =
+                buildSchedules(entity.getId(), request.getSchedules(), existingSchedules, effectiveGroups);
 
         CourseSubjectEntity saved = courseSubjectRepository.saveAndFlush(entity);
-        scheduleRepository.saveAll(applySchedules(entity.getId(), existing, request.getSchedules()));
+        classGroupRepository.saveAll(incoming);
+        scheduleRepository.saveAll(incomingSchedules);
 
-        return toResponse(saved, scheduleRepository.findByCourseIdAndSubjectId(courseId, subjectId));
+        // re-read so updated rows are not duplicated in the response
+        return toResponse(
+                saved,
+                classGroupRepository.findByCourseIdAndSubjectId(courseId, subjectId),
+                scheduleRepository.findByCourseIdAndSubjectId(courseId, subjectId));
     }
 
     @Override
@@ -163,214 +203,210 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
         if (courseSubjectRepository.isInUse(courseId, subjectId)) {
             throw new BusinessException(IAMErrorCode.COURSE_SUBJECT_IN_USE);
         }
-        // class groups are removed by cascade from their schedule
-        scheduleRepository.deleteAll(scheduleRepository.findByCourseIdAndSubjectId(courseId, subjectId));
-        scheduleRepository.flush();
+        scheduleRepository.deleteByCourseIdAndSubjectId(courseId, subjectId);
         courseSubjectRepository.delete(entity);
     }
 
-    // ---------- planning (no entity is modified here) ----------
+    // ---------- class group building & validation ----------
 
-    private List<SchedulePlan> planSchedules(List<ScheduleEntity> existing, List<ScheduleRequest> inputs) {
-
-        List<ScheduleRequest> in = inputs == null ? List.of() : inputs;
-        Map<UUID, ScheduleEntity> existingById =
-                existing.stream().collect(Collectors.toMap(ScheduleEntity::getId, Function.identity()));
-
-        Map<UUID, ScheduleRequest> inputById = new HashMap<>();
-        for (ScheduleRequest r : in) {
-            if (r.getId() == null) {
-                continue;
-            }
-            if (!existingById.containsKey(r.getId())) {
-                throw new BusinessException(IAMErrorCode.SCHEDULE_NOT_FOUND);
-            }
-            inputById.put(r.getId(), r);
-        }
-
-        List<SchedulePlan> plans = new ArrayList<>();
-        for (ScheduleEntity s : existing) {
-            ScheduleRequest r = inputById.get(s.getId());
-            SchedulePlan p = r != null ? planFromRequest(r, s) : planFromEntity(s);
-            if (p != null) {
-                plans.add(p);
-            }
-        }
-        for (ScheduleRequest r : in) {
-            if (r.getId() == null) {
-                SchedulePlan p = planFromRequest(r, null);
-                if (p != null) {
-                    plans.add(p);
-                }
-            }
-        }
-        return plans;
-    }
-
-    private SchedulePlan planFromEntity(ScheduleEntity s) {
-        if (!isActive(s.getStatus())) {
-            return null;
-        }
-        List<GroupPlan> groups = s.getClassGroups().stream()
-                .filter(g -> isActive(g.getStatus()))
-                .map(g -> new GroupPlan(g.getName(), g.getClassroomId(), g.getInstructorId(), g.getCapacity()))
-                .toList();
-        return new SchedulePlan(
-                s.getName(),
-                new HashSet<>(s.getDaysOfWeek()),
-                s.getStartedTime(),
-                s.getEndedTime(),
-                s.getMaxStudents(),
-                groups,
-                false);
-    }
-
-    private SchedulePlan planFromRequest(ScheduleRequest r, ScheduleEntity current) {
-        String status = r.getStatus() != null ? r.getStatus() : current != null ? current.getStatus() : null;
-        if (!isActive(status)) {
-            return null; // disabled schedule: its rooms and instructors are free
-        }
-        List<GroupPlan> groups = planGroups(current == null ? List.of() : current.getClassGroups(), r.getClassGroups());
-        if (groups.isEmpty()) {
-            throw new BusinessException(IAMErrorCode.SCHEDULE_CLASS_GROUP_REQUIRED);
-        }
-        return new SchedulePlan(
-                r.getName().trim(),
-                new HashSet<>(r.getDaysOfWeek()),
-                r.getStartedTime(),
-                r.getEndedTime(),
-                r.getMaxStudents(),
-                groups,
-                true);
-    }
-
-    private List<GroupPlan> planGroups(List<ClassGroupEntity> current, List<ClassGroupRequest> inputs) {
-
-        if (inputs == null) { // groups not sent: keep the current ones
-            return current.stream()
-                    .filter(g -> isActive(g.getStatus()))
-                    .map(g -> new GroupPlan(g.getName(), g.getClassroomId(), g.getInstructorId(), g.getCapacity()))
-                    .toList();
-        }
-
-        Set<UUID> currentIds = current.stream().map(ClassGroupEntity::getId).collect(Collectors.toSet());
-        Map<UUID, ClassGroupRequest> inputById = new HashMap<>();
-        for (ClassGroupRequest r : inputs) {
-            if (r.getId() == null) {
-                continue;
-            }
-            if (!currentIds.contains(r.getId())) {
-                throw new BusinessException(IAMErrorCode.CLASS_GROUP_NOT_FOUND);
-            }
-            inputById.put(r.getId(), r);
-        }
-
-        List<GroupPlan> plans = new ArrayList<>();
-        for (ClassGroupEntity g : current) {
-            ClassGroupRequest r = inputById.get(g.getId());
-            if (r != null) {
-                String status = r.getStatus() != null ? r.getStatus() : g.getStatus();
-                if (isActive(status)) {
-                    plans.add(groupPlan(r));
-                }
-            } else if (isActive(g.getStatus())) {
-                plans.add(new GroupPlan(g.getName(), g.getClassroomId(), g.getInstructorId(), g.getCapacity()));
-            }
-        }
-        for (ClassGroupRequest r : inputs) {
-            if (r.getId() == null && isActive(r.getStatus())) {
-                plans.add(groupPlan(r));
-            }
-        }
-        return plans;
-    }
-
-    private GroupPlan groupPlan(ClassGroupRequest r) {
-        return new GroupPlan(r.getName().trim(), r.getClassroomId(), r.getInstructorId(), r.getCapacity());
-    }
-
-    private List<ScheduleEntity> applySchedules(
-            CourseSubjectCompensationId id, List<ScheduleEntity> existing, List<ScheduleRequest> inputs) {
+    private List<ClassGroupEntity> buildClassGroups(
+            CourseEntity course,
+            CourseSubjectCompensationId id,
+            List<ClassGroupRequest> inputs,
+            UUID defaultInstructorId,
+            Integer maxStudents,
+            List<ClassGroupEntity> existing) {
 
         if (inputs == null || inputs.isEmpty()) {
+            // no groups sent: still make sure existing groups can hold max_students
+            if (maxStudents != null && !existing.isEmpty()) {
+                int total = existing.stream()
+                        .mapToInt(ClassGroupEntity::getCapacity)
+                        .sum();
+                if (total < maxStudents) {
+                    throw new BusinessException(IAMErrorCode.CLASS_GROUPS_CANNOT_HOLD_STUDENTS);
+                }
+            }
             return List.of();
         }
+
+        Set<UUID> updatedIds = inputs.stream()
+                .map(ClassGroupRequest::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        List<ClassGroupEntity> untouched =
+                existing.stream().filter(g -> !updatedIds.contains(g.getId())).toList();
+
+        validateNames(inputs, untouched);
+        validateTotalCapacity(inputs, untouched, maxStudents);
+        validateInstructors(inputs, defaultInstructorId);
+        validateClassrooms(inputs, untouched);
+
+        Map<UUID, ClassGroupEntity> existingById =
+                existing.stream().collect(Collectors.toMap(ClassGroupEntity::getId, Function.identity()));
+        UUID userId = currentUserId();
+
+        return inputs.stream()
+                .map(in -> {
+                    validateClassroom(in, course);
+
+                    ClassGroupEntity g = in.getId() == null
+                            ? newGroup(id, userId)
+                            : Objects.requireNonNull(existingById.get(in.getId()), () -> {
+                                throw new BusinessException(IAMErrorCode.CLASS_GROUP_NOT_FOUND);
+                            });
+
+                    g.setName(in.getName().trim());
+                    g.setCapacity(in.getCapacity());
+                    g.setClassroomId(in.getClassroomId());
+                    g.setInstructorId(resolveInstructorId(in, defaultInstructorId));
+                    return g;
+                })
+                .toList();
+    }
+
+    private void validateNames(List<ClassGroupRequest> inputs, List<ClassGroupEntity> untouched) {
+        Set<String> seen = new HashSet<>();
+        Stream.concat(
+                        untouched.stream().map(ClassGroupEntity::getName),
+                        inputs.stream().map(ClassGroupRequest::getName))
+                .map(name -> name.trim().toLowerCase(Locale.ROOT))
+                .filter(name -> !seen.add(name))
+                .findAny()
+                .ifPresent(name -> {
+                    throw new BusinessException(IAMErrorCode.CLASS_GROUP_NAME_DUPLICATED);
+                });
+    }
+
+    private void validateTotalCapacity(
+            List<ClassGroupRequest> inputs, List<ClassGroupEntity> untouched, Integer maxStudents) {
+        if (maxStudents == null) {
+            return;
+        }
+        int total = untouched.stream().mapToInt(ClassGroupEntity::getCapacity).sum()
+                + inputs.stream().mapToInt(ClassGroupRequest::getCapacity).sum();
+
+        if (total < maxStudents) {
+            throw new BusinessException(IAMErrorCode.CLASS_GROUPS_CANNOT_HOLD_STUDENTS);
+        }
+    }
+
+    private void validateInstructors(List<ClassGroupRequest> inputs, UUID defaultInstructorId) {
+        List<UUID> ids = inputs.stream()
+                .map(in -> resolveInstructorId(in, defaultInstructorId))
+                .filter(Objects::nonNull)
+                .toList();
+
+        Set<UUID> unique = new HashSet<>(ids);
+        if (unique.size() != ids.size()) {
+            throw new BusinessException(IAMErrorCode.CLASS_GROUP_INSTRUCTOR_DUPLICATED);
+        }
+        if (userRepository.findAllById(unique).size() != unique.size()) {
+            throw new BusinessException(IAMErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    private void validateClassroom(ClassGroupRequest in, CourseEntity course) {
+        if (in.getClassroomId() == null) {
+            return;
+        }
+        ClassroomEntity room = classroomRepository
+                .findById(in.getClassroomId())
+                .filter(r -> STATUS_ACTIVE.equalsIgnoreCase(String.valueOf(r.getStatus())))
+                .orElseThrow(() -> new BusinessException(IAMErrorCode.CLASSROOM_NOT_FOUND));
+
+        if (!Objects.equals(room.getBranchId(), course.getBranchId())) {
+            throw new BusinessException(IAMErrorCode.CLASSROOM_NOT_IN_COURSE_BRANCH);
+        }
+        if (room.getCapacity() != null && in.getCapacity() > room.getCapacity()) {
+            throw new BusinessException(IAMErrorCode.CLASS_GROUP_EXCEEDS_ROOM_CAPACITY);
+        }
+    }
+
+    private void validateClassrooms(List<ClassGroupRequest> inputs, List<ClassGroupEntity> untouched) {
+        Set<UUID> seen = new HashSet<>();
+        Stream.concat(
+                        untouched.stream().map(ClassGroupEntity::getClassroomId),
+                        inputs.stream().map(ClassGroupRequest::getClassroomId))
+                .filter(Objects::nonNull) // groups without a room are allowed
+                .filter(roomId -> !seen.add(roomId)) // add() returns false if already seen
+                .findAny()
+                .ifPresent(roomId -> {
+                    throw new BusinessException(IAMErrorCode.CLASS_GROUP_CLASSROOM_DUPLICATED);
+                });
+    }
+
+    private ClassGroupEntity newGroup(CourseSubjectCompensationId id, UUID userId) {
+        ClassGroupEntity g = new ClassGroupEntity();
+        g.setCourseId(id.getCourseId());
+        g.setSubjectId(id.getSubjectId());
+        g.setStatus(STATUS_ACTIVE);
+        g.setCreatedBy(userId);
+        return g;
+    }
+
+    private static UUID resolveInstructorId(ClassGroupRequest in, UUID defaultInstructorId) {
+        return in.getInstructorId() != null ? in.getInstructorId() : defaultInstructorId;
+    }
+
+    // ---------- schedule building ----------
+
+    private List<ScheduleEntity> buildSchedules(
+            CourseSubjectCompensationId id,
+            List<ScheduleRequest> inputs,
+            List<ScheduleEntity> existing,
+            List<ClassGroupEntity> effectiveGroups) {
+
+        List<ScheduleRequest> in = inputs == null ? List.of() : inputs;
+
+        Set<UUID> updatedIds =
+                in.stream().map(ScheduleRequest::getId).filter(Objects::nonNull).collect(Collectors.toSet());
+        List<ScheduleEntity> untouched =
+                existing.stream().filter(s -> !updatedIds.contains(s.getId())).toList();
+
+        scheduleValidator.validate(in, untouched, effectiveGroups, id.getCourseId(), id.getSubjectId());
+
         Map<UUID, ScheduleEntity> existingById =
                 existing.stream().collect(Collectors.toMap(ScheduleEntity::getId, Function.identity()));
         UUID userId = currentUserId();
 
-        List<ScheduleEntity> result = new ArrayList<>();
-        for (ScheduleRequest in : inputs) {
-            ScheduleEntity s = in.getId() == null ? newSchedule(id, userId) : existingById.get(in.getId());
-
-            s.setName(in.getName().trim());
-            s.setStartedTime(in.getStartedTime());
-            s.setEndedTime(in.getEndedTime());
-            s.setMaxStudents(in.getMaxStudents());
-            s.setDescription(in.getDescription());
-            if (in.getStatus() != null) {
-                s.setStatus(normalizeStatus(in.getStatus()));
-            }
-            if (!s.getDaysOfWeek().equals(in.getDaysOfWeek())) {
-                s.getDaysOfWeek().clear();
-                s.getDaysOfWeek().addAll(in.getDaysOfWeek());
-            }
-            if (in.getClassGroups() != null) {
-                applyGroups(s, in.getClassGroups(), userId);
-            }
-            result.add(s);
-        }
-        return result;
-    }
-
-    private void applyGroups(ScheduleEntity schedule, List<ClassGroupRequest> inputs, UUID userId) {
-        Map<UUID, ClassGroupEntity> byId = new HashMap<>();
-        schedule.getClassGroups().forEach(g -> byId.put(g.getId(), g));
-
-        for (ClassGroupRequest in : inputs) {
-            ClassGroupEntity g;
-            if (in.getId() == null) {
-                g = new ClassGroupEntity();
-                g.setSchedule(schedule);
-                g.setStatus(STATUS_ACTIVE);
-                g.setCreatedBy(userId);
-                schedule.getClassGroups().add(g);
-            } else {
-                g = byId.get(in.getId());
-            }
-            g.setName(in.getName().trim());
-            g.setCapacity(in.getCapacity());
-            g.setClassroomId(in.getClassroomId());
-            g.setInstructorId(in.getInstructorId());
-            if (in.getStatus() != null) {
-                g.setStatus(normalizeStatus(in.getStatus()));
-            }
-        }
-    }
-
-    private ScheduleEntity newSchedule(CourseSubjectCompensationId id, UUID userId) {
-        ScheduleEntity s = new ScheduleEntity();
-        s.setCourseId(id.getCourseId());
-        s.setSubjectId(id.getSubjectId());
-        s.setStatus(STATUS_ACTIVE);
-        s.setCreatedBy(userId);
-        return s;
+        return in.stream()
+                .map(r -> {
+                    ScheduleEntity s;
+                    if (r.getId() == null) {
+                        s = new ScheduleEntity();
+                        s.setCourseId(id.getCourseId());
+                        s.setSubjectId(id.getSubjectId());
+                        s.setCreatedBy(userId);
+                    } else {
+                        s = existingById.get(r.getId());
+                        if (s == null) {
+                            throw new BusinessException(IAMErrorCode.SCHEDULE_NOT_FOUND);
+                        }
+                    }
+                    s.setDayOfWeek(r.getDayOfWeek());
+                    s.setStartedTime(r.getStartedTime());
+                    s.setEndedTime(r.getEndedTime());
+                    s.setDescription(r.getDescription());
+                    return s;
+                })
+                .toList();
     }
 
     // ---------- response assembly ----------
 
-    private CourseSubjectResponse toResponse(CourseSubjectEntity entity, List<ScheduleEntity> schedules) {
+    private CourseSubjectResponse toResponse(
+            CourseSubjectEntity entity, List<ClassGroupEntity> groups, List<ScheduleEntity> schedules) {
         CourseSubjectResponse response = courseSubjectMapper.toResponse(entity);
-        response.setSchedules(toScheduleResponses(schedules));
+        response.setClassGroups(toGroupResponses(groups));
+        response.setSchedules(courseSubjectMapper.toScheduleResponses(schedules));
         return response;
     }
 
-    private List<ScheduleResponse> toScheduleResponses(List<ScheduleEntity> schedules) {
-        if (schedules.isEmpty()) {
-            return List.of();
-        }
-        Set<UUID> instructorIds = schedules.stream()
-                .flatMap(s -> s.getClassGroups().stream())
+    private List<ClassGroupResponse> toGroupResponses(List<ClassGroupEntity> groups) {
+        if (groups.isEmpty()) return List.of();
+
+        Set<UUID> instructorIds = groups.stream()
                 .map(ClassGroupEntity::getInstructorId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -378,18 +414,10 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
         Map<UUID, UserEntity> users = userRepository.findAllById(instructorIds).stream()
                 .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
 
-        List<ScheduleEntity> sorted = schedules.stream()
-                .sorted(Comparator.comparing(ScheduleEntity::getStartedTime)
-                        .thenComparing(ScheduleEntity::getName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-        return courseSubjectMapper.toScheduleResponses(sorted, users);
+        return courseSubjectMapper.toGroupResponses(groups, users);
     }
 
-    // ---------- lookups & helpers ----------
-
-    private static boolean isActive(String status) {
-        return status == null || STATUS_ACTIVE.equalsIgnoreCase(status);
-    }
+    // ---------- lookups ----------
 
     private CourseEntity findCourse(UUID courseId) {
         return courseRepository
@@ -404,12 +432,21 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.COURSE_SUBJECT_NOT_FOUND));
     }
 
+    private UserEntity findInstructor(UUID instructorId) {
+        if (instructorId == null) {
+            return null;
+        }
+        return userRepository
+                .findById(instructorId)
+                .orElseThrow(() -> new BusinessException(IAMErrorCode.USER_NOT_FOUND));
+    }
+
     private static String normalizeStatus(String status) {
         return (status == null || status.isBlank()) ? STATUS_ACTIVE : status.toLowerCase(Locale.ROOT);
     }
 
     private UUID currentUserId() {
-        // resolve from the authenticated principal (JWT "sub")
-        return UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e");
+        // TODO: resolve from the authenticated principal (JWT "sub")
+        return UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"); // temporary, testing only
     }
 }

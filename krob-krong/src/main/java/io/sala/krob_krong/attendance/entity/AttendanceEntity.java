@@ -33,8 +33,8 @@ public class AttendanceEntity {
     @Column(name = "user_id")
     private UUID userId;
 
-    @Column(name = "attendance_date")
-    private LocalDate attendance_date;
+    @Column(name = "date")
+    private LocalDate date;
 
     @Column(name = "status")
     private String status;

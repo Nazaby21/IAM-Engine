@@ -1,5 +1,6 @@
 package io.sala.krob_krong.course_subject.entity;
 
+import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.subject.entity.SubjectEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -12,6 +13,7 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
@@ -24,6 +26,9 @@ import lombok.experimental.FieldNameConstants;
 public class CourseSubjectEntity {
     @EmbeddedId
     private CourseSubjectCompensationId id;
+
+    @Column(name = "instructor_id")
+    private UUID instructorId;
 
     @Column(name = "code")
     private String code;
@@ -52,10 +57,17 @@ public class CourseSubjectEntity {
     @Column(name = "is_public")
     private Boolean isPublic;
 
+    @Column(name = "max_students")
+    private Integer maxStudents;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("subjectId")
     @JoinColumn(name = "subject_id")
     private SubjectEntity subject;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instructor_id", insertable = false, updatable = false)
+    private UserEntity instructor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({

@@ -10,10 +10,9 @@ import io.sala.krob_krong.enrollment.repository.EnrollmentRepository;
 import io.sala.krob_krong.enrollment.service.EnrollmentService;
 import io.sala.krob_krong.enrollment.service.TicketService;
 import io.sala.krob_krong.enrollment.service.validator.EnrollmentValidator;
-import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.school.service.SchoolAccess;
-import io.sala.krob_krong.utils.IdGenerator;
 import java.util.UUID;
+import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +27,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public EnrollmentResponse create(EnrollmentRequest request) {
-        enrollmentValidator.validate(request);
-        enrollmentValidator.validateCapacity(request.getClassGroupId());
         EnrollmentEntity entity = enrollmentMapper.toEntity(request);
         UUID actor = SchoolAccess.actor();
+        enrollmentValidator.validate(request);
         entity.setId(idGenerator.enroll());
         entity.setStatus(EnrollmentStatus.PENDING.name());
         entity.setCreatedBy(actor);
@@ -56,7 +54,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public TicketResponse exchange(String id) {
         EnrollmentEntity entity = enrollmentValidator.findById(id);
-        enrollmentValidator.isPending(entity, IAMErrorCode.CANNOT_EXCHANGE);
+        enrollmentValidator.isPending(entity);
         enrollmentValidator.isTicketExist(id);
         String ticketId = ticketService.generate(id);
         TicketResponse response = enrollmentMapper.toTicket(entity);

@@ -1,7 +1,5 @@
 package io.sala.krob_krong.enrollment.service.validator;
 
-import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
-import io.sala.krob_krong.classroom.repository.ClassGroupRepository;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.enrollment.constant.EnrollmentStatus;
 import io.sala.krob_krong.enrollment.dto.request.EnrollmentRequest;
@@ -13,16 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import java.util.List;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class EnrollmentValidator {
 
     private final EnrollmentRepository enrollmentRepository;
     private final TicketService ticketService;
-    private final ClassGroupRepository classGroupRepository;
 
     public void validate(EnrollmentRequest request) {
         if (ObjectUtils.isEmpty(request)) {
@@ -36,32 +30,15 @@ public class EnrollmentValidator {
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.ENROLLMENT_NOT_FOUND));
     }
 
-    public void isPending(EnrollmentEntity entity, IAMErrorCode errorCode) {
+    public void isPending(EnrollmentEntity entity) {
         if (!EnrollmentStatus.PENDING.name().equals(entity.getStatus())) {
-            throw new BusinessException(errorCode);
+            throw new BusinessException(IAMErrorCode.CANNOT_EXCHANGE);
         }
     }
 
     public void isTicketExist(String id) {
         if (ticketService.exists(id)) {
             throw new BusinessException(IAMErrorCode.TICKET_EXISTING);
-        }
-    }
-    public void validateCapacity(UUID classGroupId) {
-        ClassGroupEntity classGroup = classGroupRepository.findById(classGroupId)
-                .orElseThrow(() ->
-                        new BusinessException(IAMErrorCode.CLASS_GROUP_NOT_FOUND));
-
-        long occupiedSeats = enrollmentRepository.countOccupiedSeats(
-                classGroupId,
-                List.of(
-                        EnrollmentStatus.PAID.name(),
-                        EnrollmentStatus.PROCESSING.name()
-                )
-        );
-
-        if (occupiedSeats >= classGroup.getCapacity()) {
-            throw new BusinessException(IAMErrorCode.CLASS_GROUP_FULL);
         }
     }
 }
