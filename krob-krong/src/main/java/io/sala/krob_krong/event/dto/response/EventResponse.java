@@ -11,8 +11,4 @@ public class EventResponse {
     private String description;
     private LocalDate eventDate;
     private String status;
-    private String createdBy;
-    private String createdAt;
-    private String updatedBy;
-    private String updatedAt;
 }

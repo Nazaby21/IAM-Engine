@@ -1,5 +1,6 @@
 package io.sala.krob_krong.announcement.service.impl;
 
+import io.sala.krob_krong.announcement.constant.AnnounceStatus;
 import io.sala.krob_krong.announcement.dto.request.AnnounceMakeRequest;
 import io.sala.krob_krong.announcement.dto.response.AnnounceResponse;
 import io.sala.krob_krong.announcement.entity.AnnouncementEntity;
@@ -19,8 +20,13 @@ import io.sala.krob_krong.school.service.SchoolAccess;
 import io.sala.krob_krong.utils.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
@@ -40,6 +46,19 @@ public class AnnounceServiceImpl implements AnnounceService {
         announcement.setId(idGenerator.getAnnounceId());
         announcement.setCreatedBy(actor);
         announcement.setUpdatedBy(actor);
+        Instant now = Instant.now();
+        Instant scheduledAt = request.getScheduleAt();
+        if (scheduledAt == null) {
+            announcement.setStatus(AnnounceStatus.PUBLISHED.name());
+            announcement.setPublishedAt(now);
+        } else {
+            if (!scheduledAt.isAfter(now)) {
+                throw new BusinessException(IAMErrorCode.INVALID_SCHEDULED_DATE);
+            }
+
+            announcement.setStatus(AnnounceStatus.SCHEDULED.name());
+            announcement.setScheduledAt(scheduledAt);
+        }
         AnnouncementEntity save = announceRepository.save(announcement);
         AnnounceResponse response = announceMapper.toResponse(save);
         if (save.getEventId() != null) {
@@ -61,9 +80,20 @@ public class AnnounceServiceImpl implements AnnounceService {
     }
 
     @Override
-    public PageResponse<AnnounceResponse> view(PageRequest page) {
-        return PageResponse.from(announceRepository
-                .findAll(page.toSpring(Sort.by(Sort.Direction.DESC, EventEntity.Fields.createdAt)))
-                .map(announceMapper::toResponse));
+    public PageResponse<AnnounceResponse> view(PageRequest page, AnnounceStatus status) {
+        Pageable pageable = page.toSpring(
+                Sort.by(Sort.Direction.DESC, AnnouncementEntity.Fields.createdAt)
+        );
+        Page<AnnouncementEntity> announcements = status == null
+                ? announceRepository.findAll(pageable)
+                : announceRepository.findAllByStatus(status.name(), pageable);
+        return PageResponse.from(announcements.map(announcement -> {
+            AnnounceResponse response = announceMapper.toResponse(announcement);
+            if (announcement.getEventId() != null) {
+                EventResponse event = eventService.getById(announcement.getEventId());
+                response.setEvent(event);
+            }
+            return response;
+        }));
     }
 }

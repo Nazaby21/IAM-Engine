@@ -1,5 +1,6 @@
 package io.sala.krob_krong.announcement.controller;
 
+import io.sala.krob_krong.announcement.constant.AnnounceStatus;
 import io.sala.krob_krong.announcement.dto.request.AnnounceMakeRequest;
 import io.sala.krob_krong.announcement.dto.response.AnnounceResponse;
 import io.sala.krob_krong.announcement.service.AnnounceService;
@@ -35,9 +36,9 @@ public class AnnounceController {
     }
 
     @GetMapping
-    public  ApiResponse<PageResponse<AnnounceResponse>> viewAll(PageRequest page){
+    public  ApiResponse<PageResponse<AnnounceResponse>> viewAll(PageRequest page, @RequestParam(required = false)AnnounceStatus status){
         page.setSize(10);
-        PageResponse<AnnounceResponse> response = announceService.view(page);
+        PageResponse<AnnounceResponse> response = announceService.view(page, status);
         return ApiResponse.success(response);
     }
 }

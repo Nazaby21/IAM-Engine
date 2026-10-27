@@ -1,5 +1,6 @@
 package io.sala.krob_krong.announcement.dto.response;
 
+import io.sala.krob_krong.announcement.constant.AnnounceStatus;
 import io.sala.krob_krong.event.dto.response.EventResponse;
 import lombok.Data;
 
@@ -15,8 +16,7 @@ public class AnnounceResponse {
     private String type;
     private String attachment;
     private EventResponse event;
-    private String createdBy;
-    private String createdAt;
-    private String updatedBy;
-    private String updatedAt;
+    private AnnounceStatus status;
+    private String scheduledAt;
+    private String publishedAt;
 }
