@@ -77,11 +77,11 @@ public enum IAMErrorCode implements ErrorCode {
     TICKET_NOT_FOUND(400, "ticket number is not found"),
 
     PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
-    PAYMENT_NOT_FOUND (400, "payment not found"),
+    PAYMENT_NOT_FOUND(400, "payment not found"),
     PAYMENT_ALREADY_VERIFIED(400, "payment already verified"),
     INVALID_PAYMENT_STATUS(400, "payment status is invalid"),
     INVALID_SECRET_KEY(400, "secret key is invalid"),
-    INVALID_AMOUNT (400, "amount is invalid"),
+    INVALID_AMOUNT(400, "amount is invalid"),
 
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),

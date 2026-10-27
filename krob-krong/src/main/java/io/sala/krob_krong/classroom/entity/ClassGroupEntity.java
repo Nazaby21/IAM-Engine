@@ -1,6 +1,6 @@
 package io.sala.krob_krong.classroom.entity;
 
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.Getter;

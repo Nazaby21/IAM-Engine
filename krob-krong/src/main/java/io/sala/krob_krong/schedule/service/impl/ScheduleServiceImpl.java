@@ -1,13 +1,12 @@
 package io.sala.krob_krong.schedule.service.impl;
 
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.classroom.repository.ClassGroupRepository;
 import io.sala.krob_krong.classroom.repository.ClassroomRepository;
-import io.sala.krob_krong.common.enumz.DayOfWeeks;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.schedule.dto.request.CreateScheduleRequestDto;
 import io.sala.krob_krong.schedule.dto.response.ScheduleResponseDto;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import io.sala.krob_krong.schedule.mapper.ScheduleMapper;
 import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import io.sala.krob_krong.schedule.service.ScheduleService;
@@ -62,7 +61,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                     .startedTime(item.getStartedTime())
                     .endedTime(item.getEndedTime())
                     .description(requestDto.getDescription())
-                    .createdBy(UUID.fromString("f6ad7847-9f47-47b9-b7c4-5b3c26dd0255"))
+                    .createdBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"))
                     .build();
 
             entities.add(entity);

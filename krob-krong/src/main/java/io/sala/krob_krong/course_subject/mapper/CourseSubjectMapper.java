@@ -1,7 +1,6 @@
 package io.sala.krob_krong.course_subject.mapper;
 
 import io.sala.krob_krong.account.entity.UserEntity;
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectCreateRequest;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectUpdateRequest;
@@ -10,6 +9,7 @@ import io.sala.krob_krong.course_subject.dto.response.CourseSubjectResponse;
 import io.sala.krob_krong.course_subject.dto.response.InstructorResponse;
 import io.sala.krob_krong.course_subject.dto.response.ScheduleResponse;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectEntity;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import io.sala.krob_krong.subject.mapper.SubjectMapper;
 import java.time.DayOfWeek;
 import java.util.List;

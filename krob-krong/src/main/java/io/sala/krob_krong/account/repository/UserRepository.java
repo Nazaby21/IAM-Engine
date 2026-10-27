@@ -16,12 +16,16 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID>, JpaSpec
     Optional<UserEntity> findByIdForUpdate(@Param("id") UUID id);
 
     @Query(value = """
-        select exists(
-            select 1 from app_user u
-            join enrollment e
-                on e.user_id = u.id
-            where e.user_id = :id
-            and e.schedule_id = :scheduleId)
-    """, nativeQuery = true)
-    boolean existsByStudentId(@Param("id") UUID id, @Param("scheduleId") UUID scheduleId);
+            SELECT EXISTS (
+                SELECT 1
+                FROM app_user u
+                JOIN enrollment e
+                    ON e.user_id = u.id
+                JOIN class_group cg
+                    ON cg.id = e.class_group_id
+                WHERE u.id = :studentId
+                  AND cg.schedule_id = :scheduleId
+            )
+            """, nativeQuery = true)
+    boolean existsByStudentIdAndScheduleId(@Param("studentId") UUID studentId, @Param("scheduleId") UUID scheduleId);
 }

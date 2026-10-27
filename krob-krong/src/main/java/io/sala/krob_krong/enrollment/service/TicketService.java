@@ -7,5 +7,5 @@ public interface TicketService {
 
     String getEnrollmentId(String ticketNumber);
 
-    String getTicketNumber (String enrollmentId);
+    String getTicketNumber(String enrollmentId);
 }

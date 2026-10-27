@@ -2,7 +2,6 @@ package io.sala.krob_krong.course_subject.service.Impl;
 
 import io.sala.krob_krong.account.entity.UserEntity;
 import io.sala.krob_krong.account.repository.UserRepository;
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
@@ -26,6 +25,7 @@ import io.sala.krob_krong.course_subject.validator.GroupPlan;
 import io.sala.krob_krong.course_subject.validator.SchedulePlan;
 import io.sala.krob_krong.course_subject.validator.ScheduleValidator;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import io.sala.krob_krong.subject.entity.SubjectEntity;
 import io.sala.krob_krong.subject.repository.SubjectRepository;
@@ -410,6 +410,6 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
 
     private UUID currentUserId() {
         // resolve from the authenticated principal (JWT "sub")
-        return UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e");
+        return UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834");
     }
 }

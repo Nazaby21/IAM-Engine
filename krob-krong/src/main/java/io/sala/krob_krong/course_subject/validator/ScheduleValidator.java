@@ -2,12 +2,11 @@ package io.sala.krob_krong.course_subject.validator;
 
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
+import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import io.sala.krob_krong.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -59,15 +58,15 @@ public class ScheduleValidator {
 
         for (SchedulePlan p : plans) {
             for (GroupPlan g : p.groups()) {
-                String days = p.days().stream().map(Enum::name).collect(Collectors.joining(","));
+                String[] days = p.days().stream().map(Enum::name).toArray(String[]::new);
                 if (g.classroomId() != null
                         && scheduleRepository.roomBusy(
-                                g.classroomId(), courseId, subjectId, days, p.start(), p.end(), from, to)) {
+                                g.classroomId(), courseId, subjectId, days.toString(), p.start(), p.end(), from, to)) {
                     throw new BusinessException(IAMErrorCode.CLASSROOM_BUSY);
                 }
                 if (g.instructorId() != null
                         && scheduleRepository.instructorBusy(
-                                g.instructorId(), courseId, subjectId, p.days(), p.start(), p.end(), from, to)) {
+                                g.instructorId(), courseId, subjectId, days, p.start(), p.end(), from, to)) {
                     throw new BusinessException(IAMErrorCode.INSTRUCTOR_BUSY);
                 }
             }

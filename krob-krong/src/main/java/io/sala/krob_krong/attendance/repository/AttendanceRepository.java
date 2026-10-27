@@ -2,13 +2,11 @@ package io.sala.krob_krong.attendance.repository;
 
 import io.sala.krob_krong.attendance.entity.AttendanceEntity;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UUID> {
@@ -20,5 +18,8 @@ public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UU
                     and a.student_id = :studentId
             )
     """, nativeQuery = true)
-    boolean existsAttendance(@Param("attendanceDate") LocalDate attendanceDate, @Param("studentId") UUID studentId, @Param("scheduleId" ) UUID scheduleId);
+    boolean existsAttendance(
+            @Param("attendanceDate") LocalDate attendanceDate,
+            @Param("studentId") UUID studentId,
+            @Param("scheduleId") UUID scheduleId);
 }

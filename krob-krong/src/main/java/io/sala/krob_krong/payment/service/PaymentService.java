@@ -8,7 +8,7 @@ import io.sala.krob_krong.payment.dto.response.PaymentResponse;
 public interface PaymentService {
     PaymentResponse makePayment(PaymentMakeRequest request);
 
-    PaymentResponse verifyPayment (PaymentStatus status, PaymentVerifyRequest request);
+    PaymentResponse verifyPayment(PaymentStatus status, PaymentVerifyRequest request);
 
-    PaymentResponse record (String paymentId);
+    PaymentResponse record(String paymentId);
 }

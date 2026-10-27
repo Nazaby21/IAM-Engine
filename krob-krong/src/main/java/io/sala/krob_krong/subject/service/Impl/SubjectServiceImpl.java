@@ -58,7 +58,7 @@ public class SubjectServiceImpl implements SubjectService {
 
         var subject = subjectMapper.toEntity(request);
         subject.setBranchId(branchId);
-        subject.setCreatedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        subject.setCreatedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
 
         return subjectMapper.toResponse(subjectRepository.save(subject));
     }
@@ -74,7 +74,7 @@ public class SubjectServiceImpl implements SubjectService {
         }
 
         subjectMapper.updateEntity(request, subject);
-        subject.setUpdatedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        subject.setUpdatedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
         subject.setUpdatedAt(OffsetDateTime.now().toInstant());
 
         return subjectMapper.toResponse(subjectRepository.save(subject));
@@ -86,7 +86,7 @@ public class SubjectServiceImpl implements SubjectService {
         SubjectEntity subject = findActive(branchId, subjectId);
 
         subject.setDeletedAt(OffsetDateTime.now());
-        subject.setDeletedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        subject.setDeletedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
         subjectRepository.save(subject);
     }
 

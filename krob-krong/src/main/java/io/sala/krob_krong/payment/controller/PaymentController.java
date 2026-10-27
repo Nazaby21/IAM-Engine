@@ -28,15 +28,16 @@ public class PaymentController {
         return ApiResponse.create(response);
     }
 
-    @PostMapping ("/verify")
-    public ApiResponse<PaymentResponse> verifyPayment (@RequestParam PaymentStatus status, @Valid @RequestBody PaymentVerifyRequest request){
-        PaymentResponse response=paymentService.verifyPayment(status, request);
+    @PostMapping("/verify")
+    public ApiResponse<PaymentResponse> verifyPayment(
+            @RequestParam PaymentStatus status, @Valid @RequestBody PaymentVerifyRequest request) {
+        PaymentResponse response = paymentService.verifyPayment(status, request);
         return ApiResponse.success(response);
     }
 
     @GetMapping("/{id}/record")
-    public ApiResponse <PaymentResponse> record (@PathVariable String id){
-        PaymentResponse response=paymentService.record(id);
+    public ApiResponse<PaymentResponse> record(@PathVariable String id) {
+        PaymentResponse response = paymentService.record(id);
         return ApiResponse.success(response);
     }
 }
