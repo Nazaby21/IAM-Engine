@@ -80,6 +80,7 @@ public enum IAMErrorCode implements ErrorCode {
     INVALID_AMOUNT (400, "amount is invalid"),
 
     ANN_NOT_FOUND(400, "announcement is not found"),
+    INVALID_SCHEDULED_DATE(400, "the schedule date is invalid"),
 
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),
