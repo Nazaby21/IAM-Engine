@@ -20,10 +20,11 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID>, JpaSpec
                 SELECT 1
                 FROM app_user u
                 JOIN enrollment e
-                    ON e.user_id = u.id
+                ON e.user_id = u.id
                 JOIN class_group cg
-                    ON cg.id = e.class_group_id
+                ON cg.id = e.class_group_id
                 WHERE u.id = :studentId
+                  AND e.status = 'PAID'
                   AND cg.schedule_id = :scheduleId
             )
             """, nativeQuery = true)

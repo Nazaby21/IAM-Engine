@@ -40,6 +40,7 @@ public enum IAMErrorCode implements ErrorCode {
     CLASSROOM_NOT_FOUND(404, "Class room not found"),
     DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
     STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
+    ATTENDANCE_NOT_FOUND(404, "Attendance not found"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),

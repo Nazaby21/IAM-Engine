@@ -10,7 +10,6 @@ import io.sala.krob_krong.course_subject.dto.response.InstructorResponse;
 import io.sala.krob_krong.course_subject.dto.response.ScheduleResponse;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectEntity;
 import io.sala.krob_krong.schedule.entity.ScheduleEntity;
-import io.sala.krob_krong.subject.mapper.SubjectMapper;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,15 @@ import java.util.stream.Stream;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(
-        componentModel = "spring",
-        uses = SubjectMapper.class,
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CourseSubjectMapper {
 

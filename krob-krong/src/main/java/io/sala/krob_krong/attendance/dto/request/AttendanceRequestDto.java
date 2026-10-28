@@ -2,42 +2,33 @@ package io.sala.krob_krong.attendance.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sala.krob_krong.common.enumz.AttendanceStatus;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class AttendanceRequestDto {
-
-    @NotNull
+    @NotNull(message = "Attendance date is require")
     @JsonProperty("attendance_date")
     private LocalDate attendanceDate;
 
-    @NotNull
+    @NotNull(message = "Schedule id is require")
     @JsonProperty("schedule_id")
     private UUID scheduleId;
 
-    @NotEmpty
-    @JsonProperty("records")
-    private List<StudentRequestRecord> records;
+    @NotNull(message = "Student id is require")
+    @JsonProperty("student_id")
+    private UUID studentId;
 
-    @Data
-    public static class StudentRequestRecord {
-        @NotNull
-        @JsonProperty("student_id")
-        private UUID studentId;
+    @NotNull(message = "Status is require")
+    @JsonProperty("status")
+    private AttendanceStatus status;
 
-        @NotNull
-        @JsonProperty("status")
-        private AttendanceStatus status;
-
-        @JsonProperty("reason")
-        private String reason;
-    }
+    @NotBlank(message = "Reason is require")
+    @JsonProperty("reason")
+    private String reason;
 }

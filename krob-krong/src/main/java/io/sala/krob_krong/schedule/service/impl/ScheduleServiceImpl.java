@@ -30,7 +30,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public ScheduleResponseDto createSchedule(CreateScheduleRequestDto requestDto) {
-
+        UUID userId = currentUserId();
         UUID classGroupId = requestDto.getClassGroupId();
 
         classGroupRepository
@@ -61,7 +61,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                     .startedTime(item.getStartedTime())
                     .endedTime(item.getEndedTime())
                     .description(requestDto.getDescription())
-                    .createdBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"))
+                    .createdBy(userId)
                     .build();
 
             entities.add(entity);
@@ -80,5 +80,10 @@ public class ScheduleServiceImpl implements ScheduleService {
                                 .build())
                         .toList())
                 .build();
+    }
+
+    private UUID currentUserId() {
+        // resolve from the authenticated principal (JWT "sub")
+        return UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834");
     }
 }

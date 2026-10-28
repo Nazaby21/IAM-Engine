@@ -1,18 +1,15 @@
 package io.sala.krob_krong.schedule.repository;
 
 import io.sala.krob_krong.schedule.entity.ScheduleEntity;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<ScheduleEntity, UUID> {
@@ -102,6 +99,5 @@ public interface ScheduleRepository extends JpaRepository<ScheduleEntity, UUID> 
             @Param("start") LocalTime start,
             @Param("end") LocalTime end,
             @Param("from") Instant from,
-            @Param("to") Instant to
-    );
+            @Param("to") Instant to);
 }

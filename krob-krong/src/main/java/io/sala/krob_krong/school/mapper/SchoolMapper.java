@@ -4,7 +4,10 @@ import io.sala.krob_krong.school.dto.*;
 import io.sala.krob_krong.school.entity.*;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface SchoolMapper {
     @Mapping(target = "logoUrl", expression = "java(imageUrl(school.getId(), school.getLogoAssetId()))")
     @Mapping(target = "coverUrl", expression = "java(imageUrl(school.getId(), school.getCoverAssetId()))")
