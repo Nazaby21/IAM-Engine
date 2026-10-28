@@ -8,6 +8,8 @@ import io.sala.krob_krong.attendance.service.AttendanceService;
 import io.sala.krob_krong.common.response.ApiResponse;
 import io.sala.krob_krong.common.response.PageResponse;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,8 +50,7 @@ public class AttendanceController {
     @GetMapping("/attendance")
     public ApiResponse<PageResponse<AttendanceResponseDto>> getAllAttendanceRecords(
             @RequestParam(required = false) UUID search,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AttendanceResponseDto> responseDtoPage = attendanceService.searchAttendance(search, pageable);
 
         PageResponse<AttendanceResponseDto> pageResponse = PageResponse.from(responseDtoPage);

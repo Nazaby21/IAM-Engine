@@ -4,11 +4,10 @@ import io.sala.krob_krong.attendance.dto.request.AttendanceRequestDto;
 import io.sala.krob_krong.attendance.dto.request.CreateAttendanceRequestDto;
 import io.sala.krob_krong.attendance.dto.response.AttendanceResponseDto;
 import io.sala.krob_krong.attendance.dto.response.CreateAttendanceResponseDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AttendanceService {
     CreateAttendanceResponseDto recordAttendance(CreateAttendanceRequestDto request);

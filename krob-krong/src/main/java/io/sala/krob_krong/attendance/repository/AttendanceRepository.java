@@ -12,7 +12,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AttendanceRepository extends JpaRepository<AttendanceEntity, UUID>, JpaSpecificationExecutor<AttendanceEntity> {
+public interface AttendanceRepository
+        extends JpaRepository<AttendanceEntity, UUID>, JpaSpecificationExecutor<AttendanceEntity> {
     List<AttendanceEntity> findByStudentId(UUID studentId);
 
     @Query(value = """

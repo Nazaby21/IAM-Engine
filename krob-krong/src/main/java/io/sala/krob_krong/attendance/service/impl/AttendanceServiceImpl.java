@@ -13,16 +13,14 @@ import io.sala.krob_krong.attendance.specification.AttendanceSpecification;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.schedule.repository.ScheduleRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
