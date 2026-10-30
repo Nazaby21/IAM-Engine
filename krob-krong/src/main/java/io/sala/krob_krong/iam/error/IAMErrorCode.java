@@ -34,6 +34,13 @@ public enum IAMErrorCode implements ErrorCode {
     WORKSPACE_NOT_FOUND(404, "Workspace not found"),
 
     USER_NOT_FOUND(404, "User not found"),
+    STUDENT_NOT_FOUND(404, "Student not found"),
+    DUPLICATE_STUDENT_ID(409, "Duplicate student id are not allowed"),
+    DUPLICATE_ATTENDANCE(409, "Duplicate attendance are not allowed"),
+    CLASSROOM_NOT_FOUND(404, "Class room not found"),
+    DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
+    STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
+    ATTENDANCE_NOT_FOUND(404, "Attendance not found"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),
@@ -69,6 +76,14 @@ public enum IAMErrorCode implements ErrorCode {
     TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
 
     PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
+    PAYMENT_NOT_FOUND(400, "payment not found"),
+    PAYMENT_ALREADY_VERIFIED(400, "payment already verified"),
+    INVALID_PAYMENT_STATUS(400, "payment status is invalid"),
+    INVALID_SECRET_KEY(400, "secret key is invalid"),
+    INVALID_AMOUNT(400, "amount is invalid"),
+
+    ANN_NOT_FOUND(400, "announcement is not found"),
+    INVALID_SCHEDULED_DATE(400, "the schedule date is invalid"),
 
     SUBJECT_ALREADY_EXISTS(400, "Subject already exists"),
     SUBJECT_NOT_FOUND(404, "Subject not found"),
@@ -83,7 +98,6 @@ public enum IAMErrorCode implements ErrorCode {
     CLASS_GROUP_NAME_DUPLICATED(400, "Class group names must be unique"),
     CLASS_GROUPS_CANNOT_HOLD_STUDENTS(400, "Total class group capacity is less than max students"),
     CLASS_GROUP_EXCEEDS_ROOM_CAPACITY(400, "Group capacity exceeds the classroom capacity"),
-    CLASSROOM_NOT_FOUND(404, "Classroom not found"),
     CLASSROOM_NOT_IN_COURSE_BRANCH(400, "Classroom does not belong to the course's branch"),
     CLASS_GROUP_INSTRUCTOR_DUPLICATED(400, "Each class group must have a different instructor"),
     CLASS_GROUP_NOT_FOUND(400, "Class Group not found"),

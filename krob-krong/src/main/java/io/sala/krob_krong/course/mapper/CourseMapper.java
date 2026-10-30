@@ -5,10 +5,15 @@ import io.sala.krob_krong.course.dto.CourseResponse;
 import io.sala.krob_krong.course.dto.CourseUpdateRequest;
 import io.sala.krob_krong.course.entity.CourseEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CourseMapper {
     CourseResponse toResponse(CourseEntity courseEntity);
 

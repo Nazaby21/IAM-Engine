@@ -1,4 +1,4 @@
-package io.sala.krob_krong.attendance.entity;
+package io.sala.krob_krong.schedule.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,10 @@ import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,6 +23,9 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldNameConstants
 @Table(name = "schedule")
 public class ScheduleEntity {

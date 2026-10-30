@@ -17,19 +17,36 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CourseSubjectRepository
         extends JpaRepository<CourseSubjectEntity, CourseSubjectCompensationId>,
-                JpaSpecificationExecutor<CourseSubjectEntity> {
+        JpaSpecificationExecutor<CourseSubjectEntity> {
     boolean existsByIdCourseIdAndCode(
             UUID courseId, @Size(max = 50, message = "Code must not exceed 50 characters") String code);
 
     boolean existsByIdCourseIdAndCodeAndIdSubjectIdNot(UUID courseId, String code, UUID subjectId);
 
-    @Query(value = """
-        SELECT EXISTS (SELECT 1 FROM class_group WHERE course_id = :courseId AND subject_id = :subjectId)
-            OR EXISTS (SELECT 1 FROM assessment  WHERE course_id = :courseId AND subject_id = :subjectId)
-        """, nativeQuery = true)
-    boolean isInUse(@Param("courseId") UUID courseId, @Param("subjectId") UUID subjectId);
+    // AFTER: assessments, and students enrolled in any group of this course_subject
+    @Query("""
+    select count(a) from AssessmentEntity a
+    where a.courseId = :courseId and a.subjectId = :subjectId
+    """)
+    long countAssessments(UUID courseId, UUID subjectId);
+
+    default boolean isInUse(UUID courseId, UUID subjectId) {
+        return countAssessments(courseId, subjectId) > 0;
+    }
 
     @Override
-    @EntityGraph(attributePaths = {"subject", "instructor"})
+    @EntityGraph(attributePaths = {"subject"})
     Page<CourseSubjectEntity> findAll(Specification<CourseSubjectEntity> spec, Pageable pageable);
+
+    @Query("""
+    select count(cs) > 0
+    from CourseSubjectEntity cs, CourseEntity c, BranchEntity b
+    where cs.id.courseId = :courseId
+      and cs.id.subjectId = :subjectId
+      and c.id = cs.id.courseId
+      and b.id = c.branchId
+      and b.schoolId = :schoolId
+    """)
+    boolean existsInSchool(
+            @Param("courseId") UUID courseId, @Param("subjectId") UUID subjectId, @Param("schoolId") UUID schoolId);
 }
