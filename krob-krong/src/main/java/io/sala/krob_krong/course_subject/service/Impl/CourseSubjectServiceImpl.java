@@ -20,6 +20,9 @@ import io.sala.krob_krong.course_subject.mapper.CourseSubjectMapper;
 import io.sala.krob_krong.course_subject.repository.CourseSubjectRepository;
 import io.sala.krob_krong.course_subject.service.CourseSubjectService;
 import io.sala.krob_krong.course_subject.specification.CourseSubjectListSpec;
+import io.sala.krob_krong.course_subject.validator.CourseSubjectValidator;
+import io.sala.krob_krong.course_subject.validator.GroupPlan;
+import io.sala.krob_krong.course_subject.validator.SchedulePlan;
 import io.sala.krob_krong.course_subject.validator.ScheduleValidator;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.schedule.entity.ScheduleEntity;
@@ -56,7 +59,7 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
     private final CourseRepository courseRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
-    private final CourseSubje courseSubjectValidator;
+    private final CourseSubjectValidator courseSubjectValidator;
     private final ScheduleRepository scheduleRepository;
     private final ScheduleValidator scheduleValidator;
 

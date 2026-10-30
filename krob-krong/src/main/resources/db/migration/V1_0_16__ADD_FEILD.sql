@@ -1,3 +1,4 @@
+
 -- 1. Drop the foreign key referencing enrollment.id
 ALTER TABLE attendance
     DROP CONSTRAINT IF EXISTS attendance_enrollment_id_fkey;

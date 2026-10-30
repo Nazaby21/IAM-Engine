@@ -1,3 +1,4 @@
+
 -- 1. Drop the payment foreign key if it exists
 ALTER TABLE payment
     DROP CONSTRAINT IF EXISTS payment_enrollment_id_fkey;

@@ -41,6 +41,11 @@ public enum IAMErrorCode implements ErrorCode {
     DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
     STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
     ATTENDANCE_NOT_FOUND(404, "Attendance not found"),
+    SCHEDULE_NAME_DUPLICATED(409, "Schedule name already taken"),
+    SCHEDULE_CLASS_GROUP_REQUIRED(400, "Schedule must have at least one class group"),
+    CLASS_GROUP_FULL(400, "class is full"),
+    TICKET_NOT_FOUND(400, "ticket number is not found"),
+    INVALID_ENROLL_STATUS(400, "enrollment invalid"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),

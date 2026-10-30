@@ -1,5 +1,7 @@
 package io.sala.krob_krong.enrollment.service.validator;
 
+import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
+import io.sala.krob_krong.classroom.repository.ClassGroupRepository;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.enrollment.constant.EnrollmentStatus;
 import io.sala.krob_krong.enrollment.dto.request.EnrollmentRequest;
