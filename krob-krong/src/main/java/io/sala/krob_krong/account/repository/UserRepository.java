@@ -14,4 +14,19 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID>, JpaSpec
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
     Optional<UserEntity> findByIdForUpdate(@Param("id") UUID id);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM app_user u
+                JOIN enrollment e
+                ON e.user_id = u.id
+                JOIN class_group cg
+                ON cg.id = e.class_group_id
+                WHERE u.id = :studentId
+                  AND e.status = 'PAID'
+                  AND cg.schedule_id = :scheduleId
+            )
+            """, nativeQuery = true)
+    boolean existsByStudentIdAndScheduleId(@Param("studentId") UUID studentId, @Param("scheduleId") UUID scheduleId);
 }

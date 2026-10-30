@@ -3,16 +3,14 @@ package io.sala.krob_krong.announcement.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class AnnounceMakeRequest {
     @JsonProperty("event_id")
-    @NotNull (message = "event id is required for making announcement")
+    @NotNull(message = "event id is required for making announcement")
     private UUID eventId;
 
     @JsonProperty("school_id")

@@ -1,6 +1,7 @@
 package io.sala.krob_krong.account.controller;
 
-import io.sala.krob_krong.account.dto.*;
+import io.sala.krob_krong.account.dto.VerificationResponse;
+import io.sala.krob_krong.account.dto.VerifyEmailRequest;
 import io.sala.krob_krong.account.service.EmailVerificationService;
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.response.ApiResponse;
@@ -8,7 +9,12 @@ import io.sala.krob_krong.iam.error.IAMErrorCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor

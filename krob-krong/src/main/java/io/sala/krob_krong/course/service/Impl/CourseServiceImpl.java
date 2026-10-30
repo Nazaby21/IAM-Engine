@@ -62,7 +62,7 @@ public class CourseServiceImpl implements CourseService {
         course.setType(String.valueOf(request.getType()));
         course.setBranchId(branchId);
         course.setStatus(Status.ACTIVE);
-        course.setCreatedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        course.setCreatedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
 
         return courseMapper.toResponse(courseRepository.save(course));
     }
@@ -79,7 +79,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         courseMapper.updateEntity(request, course);
-        course.setUpdatedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        course.setUpdatedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
         course.setUpdatedAt(OffsetDateTime.now());
 
         return courseMapper.toResponse(courseRepository.save(course));
@@ -90,7 +90,7 @@ public class CourseServiceImpl implements CourseService {
         CourseEntity course = findActive(branchId, courseId);
 
         course.setDeletedAt(OffsetDateTime.now());
-        course.setDeletedBy(UUID.fromString("1e0f83bb-7531-4585-be53-4188a7902c2e"));
+        course.setDeletedBy(UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834"));
         courseRepository.save(course);
     }
 

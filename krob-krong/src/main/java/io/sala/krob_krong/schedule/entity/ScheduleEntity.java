@@ -1,4 +1,4 @@
-package io.sala.krob_krong.attendance.entity;
+package io.sala.krob_krong.schedule.entity;
 
 import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
 import jakarta.persistence.CascadeType;
@@ -18,7 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.BatchSize;
@@ -30,6 +33,9 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldNameConstants
 @Table(name = "schedule")
 public class ScheduleEntity {

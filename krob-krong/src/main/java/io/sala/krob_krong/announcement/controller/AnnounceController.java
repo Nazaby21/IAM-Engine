@@ -30,13 +30,14 @@ public class AnnounceController {
     }
 
     @GetMapping("/{id}/detail")
-    public ApiResponse<AnnounceResponse> viewDetail(@PathVariable String id){
+    public ApiResponse<AnnounceResponse> viewDetail(@PathVariable String id) {
         AnnounceResponse response = announceService.viewDetail(id);
         return ApiResponse.success(response);
     }
 
     @GetMapping
-    public  ApiResponse<PageResponse<AnnounceResponse>> viewAll(PageRequest page, @RequestParam(required = false)AnnounceStatus status){
+    public ApiResponse<PageResponse<AnnounceResponse>> viewAll(
+            PageRequest page, @RequestParam(required = false) AnnounceStatus status) {
         page.setSize(10);
         PageResponse<AnnounceResponse> response = announceService.view(page, status);
         return ApiResponse.success(response);

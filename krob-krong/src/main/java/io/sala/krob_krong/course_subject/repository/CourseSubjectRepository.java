@@ -15,7 +15,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CourseSubjectRepository extends JpaRepository<CourseSubjectEntity, CourseSubjectCompensationId>,
+public interface CourseSubjectRepository
+        extends JpaRepository<CourseSubjectEntity, CourseSubjectCompensationId>,
                 JpaSpecificationExecutor<CourseSubjectEntity> {
     boolean existsByIdCourseIdAndCode(
             UUID courseId, @Size(max = 50, message = "Code must not exceed 50 characters") String code);

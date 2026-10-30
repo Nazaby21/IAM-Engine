@@ -11,23 +11,19 @@ import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.event.dto.response.EventResponse;
-import io.sala.krob_krong.event.entity.EventEntity;
 import io.sala.krob_krong.event.mapper.EventMapper;
 import io.sala.krob_krong.event.service.EventService;
 import io.sala.krob_krong.event.service.validator.EventValidator;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.school.service.SchoolAccess;
 import io.sala.krob_krong.utils.IdGenerator;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +66,8 @@ public class AnnounceServiceImpl implements AnnounceService {
 
     @Override
     public AnnounceResponse viewDetail(String id) {
-        AnnouncementEntity announcement = announceRepository.findById(id).orElseThrow(()-> new BusinessException(IAMErrorCode.ANN_NOT_FOUND));
+        AnnouncementEntity announcement =
+                announceRepository.findById(id).orElseThrow(() -> new BusinessException(IAMErrorCode.ANN_NOT_FOUND));
         AnnounceResponse response = announceMapper.toResponse(announcement);
         if (announcement.getEventId() != null) {
             EventResponse event = eventService.getById(announcement.getEventId());
@@ -81,9 +78,7 @@ public class AnnounceServiceImpl implements AnnounceService {
 
     @Override
     public PageResponse<AnnounceResponse> view(PageRequest page, AnnounceStatus status) {
-        Pageable pageable = page.toSpring(
-                Sort.by(Sort.Direction.DESC, AnnouncementEntity.Fields.createdAt)
-        );
+        Pageable pageable = page.toSpring(Sort.by(Sort.Direction.DESC, AnnouncementEntity.Fields.createdAt));
         Page<AnnouncementEntity> announcements = status == null
                 ? announceRepository.findAll(pageable)
                 : announceRepository.findAllByStatus(status.name(), pageable);

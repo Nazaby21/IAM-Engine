@@ -1,6 +1,6 @@
 package io.sala.krob_krong.classroom.entity;
 
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.Getter;
@@ -28,8 +28,8 @@ public class ClassGroupEntity {
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "capacity")
-    private int capacity;
+    @Column(nullable = false)
+    private Integer capacity = 0;
 
     @Column(name = "status", length = 30, nullable = false)
     private String status;

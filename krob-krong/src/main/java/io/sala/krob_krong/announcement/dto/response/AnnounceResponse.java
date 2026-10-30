@@ -2,9 +2,8 @@ package io.sala.krob_krong.announcement.dto.response;
 
 import io.sala.krob_krong.announcement.constant.AnnounceStatus;
 import io.sala.krob_krong.event.dto.response.EventResponse;
-import lombok.Data;
-
 import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class AnnounceResponse {

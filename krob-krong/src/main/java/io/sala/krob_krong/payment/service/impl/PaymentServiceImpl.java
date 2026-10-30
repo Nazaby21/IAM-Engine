@@ -20,10 +20,10 @@ import io.sala.krob_krong.payment.service.PaymentService;
 import io.sala.krob_krong.payment.service.validator.PaymentValidator;
 import io.sala.krob_krong.school.service.SchoolAccess;
 import io.sala.krob_krong.utils.IdGenerator;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
         EnrollmentEntity enrollment = enrollmentValidator.findById(enrollmentId);
         enrollmentValidator.isPending(enrollment, IAMErrorCode.INVALID_ENROLL_STATUS);
         enrollmentValidator.validateCapacity(enrollment.getClassGroupId());
-        PaymentEntity payment= paymentMapper.toEntity(request);
+        PaymentEntity payment = paymentMapper.toEntity(request);
         UUID actor = SchoolAccess.actor();
         payment.setId(idGenerator.generatePaymentId());
         payment.setEnrollmentId(enrollmentId);
@@ -86,9 +86,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse record(String paymentId) {
-        PaymentEntity payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() ->
-                        new BusinessException(IAMErrorCode.PAYMENT_NOT_FOUND));
+        PaymentEntity payment = paymentRepository
+                .findById(paymentId)
+                .orElseThrow(() -> new BusinessException(IAMErrorCode.PAYMENT_NOT_FOUND));
         EnrollmentEntity enrollment = enrollmentValidator.findById(payment.getEnrollmentId());
         PaymentResponse response = paymentMapper.toPayment(payment);
         EnrollmentResponse enrollmentResponse = enrollmentMapper.toResponse(enrollment);

@@ -52,12 +52,12 @@ public class ScoreServiceImpl implements ScoreService {
 
     @Override
     public SaveScoresResponse save(UUID schoolId, UUID assessmentId, SaveScoresRequest request) {
-        AssessmentEntity assessment = assessmentRepository.findInSchool(assessmentId, schoolId)
+        AssessmentEntity assessment = assessmentRepository
+                .findInSchool(assessmentId, schoolId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found"));
 
-        List<UUID> studentIds = request.getScores().stream()
-                .map(ScoreItemRequest::getStudentId)
-                .toList();
+        List<UUID> studentIds =
+                request.getScores().stream().map(ScoreItemRequest::getStudentId).toList();
 
         if (new HashSet<>(studentIds).size() != studentIds.size()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Duplicate student_id in request");
@@ -69,15 +69,15 @@ public class ScoreServiceImpl implements ScoreService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "score must not exceed total_score");
         }
 
-        Set<UUID> enrolled = scoreRepository.findEnrolledStudentIds(
-                assessment.getCourseId(), assessment.getSubjectId(), studentIds);
+        Set<UUID> enrolled =
+                scoreRepository.findEnrolledStudentIds(assessment.getCourseId(), assessment.getSubjectId(), studentIds);
         if (!enrolled.containsAll(studentIds)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is not enrolled in this subject");
         }
 
-        Map<UUID, ScoreEntity> existing = scoreRepository
-                .findByAssessmentIdAndStudentIdIn(assessmentId, studentIds).stream()
-                .collect(Collectors.toMap(ScoreEntity::getStudentId, Function.identity()));
+        Map<UUID, ScoreEntity> existing =
+                scoreRepository.findByAssessmentIdAndStudentIdIn(assessmentId, studentIds).stream()
+                        .collect(Collectors.toMap(ScoreEntity::getStudentId, Function.identity()));
 
         List<ScoreEntity> toSave = request.getScores().stream()
                 .map(i -> {

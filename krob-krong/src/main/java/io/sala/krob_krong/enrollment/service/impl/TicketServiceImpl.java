@@ -2,10 +2,9 @@ package io.sala.krob_krong.enrollment.service.impl;
 
 import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.enrollment.service.TicketService;
-import java.time.Duration;
-
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import io.sala.krob_krong.utils.IdGenerator;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -34,9 +33,9 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public String getEnrollmentId(String ticketNumber) {
-        String enrollmentId= redisTemplate.opsForValue().get("enrollment:ticket:" + ticketNumber);
+        String enrollmentId = redisTemplate.opsForValue().get("enrollment:ticket:" + ticketNumber);
 
-        if (ObjectUtils.isEmpty(enrollmentId)){
+        if (ObjectUtils.isEmpty(enrollmentId)) {
             throw new BusinessException(IAMErrorCode.TICKET_NOT_FOUND);
         }
         return enrollmentId;
@@ -44,8 +43,6 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public String getTicketNumber(String enrollmentId) {
-        return redisTemplate.opsForValue().get(
-                "enrollment:active-ticket:" + enrollmentId
-        );
+        return redisTemplate.opsForValue().get("enrollment:active-ticket:" + enrollmentId);
     }
 }

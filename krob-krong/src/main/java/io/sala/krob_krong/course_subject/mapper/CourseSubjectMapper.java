@@ -1,7 +1,6 @@
 package io.sala.krob_krong.course_subject.mapper;
 
 import io.sala.krob_krong.account.entity.UserEntity;
-import io.sala.krob_krong.attendance.entity.ScheduleEntity;
 import io.sala.krob_krong.classroom.entity.ClassGroupEntity;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectCreateRequest;
 import io.sala.krob_krong.course_subject.dto.request.CourseSubjectUpdateRequest;
@@ -10,7 +9,7 @@ import io.sala.krob_krong.course_subject.dto.response.CourseSubjectResponse;
 import io.sala.krob_krong.course_subject.dto.response.InstructorResponse;
 import io.sala.krob_krong.course_subject.dto.response.ScheduleResponse;
 import io.sala.krob_krong.course_subject.entity.CourseSubjectEntity;
-import io.sala.krob_krong.subject.mapper.SubjectMapper;
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,15 @@ import java.util.stream.Stream;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(
-        componentModel = "spring",
-        uses = SubjectMapper.class,
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CourseSubjectMapper {
 

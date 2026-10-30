@@ -12,7 +12,7 @@ import lombok.Data;
 public class PaymentMakeRequest {
 
     @JsonProperty("ticket_number")
-    @NotBlank(message="ticket number is required")
+    @NotBlank(message = "ticket number is required")
     private String ticketNumber;
 
     @JsonProperty("amount")

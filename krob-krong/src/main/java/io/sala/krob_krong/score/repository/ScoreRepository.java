@@ -25,9 +25,10 @@ public interface ScoreRepository extends JpaRepository<ScoreEntity, UUID> {
     and g.schedule.subjectId = :subjectId
     and e.userId in :studentIds
     """)
-    Set<UUID> findEnrolledStudentIds(@Param("courseId") UUID courseId,
-                                     @Param("subjectId") UUID subjectId,
-                                     @Param("studentIds") Collection<UUID> studentIds);
+    Set<UUID> findEnrolledStudentIds(
+            @Param("courseId") UUID courseId,
+            @Param("subjectId") UUID subjectId,
+            @Param("studentIds") Collection<UUID> studentIds);
 
     @Query(value = """
     select new io.sala.krob_krong.score.dto.response.StudentScoreResponse(
@@ -36,8 +37,7 @@ public interface ScoreRepository extends JpaRepository<ScoreEntity, UUID> {
     where a.id = s.assessmentId
       and s.studentId = :studentId
     order by s.createdAt desc
-    """,
-            countQuery = """
+    """, countQuery = """
     select count(s)
     from ScoreEntity s, AssessmentEntity a
     where a.id = s.assessmentId

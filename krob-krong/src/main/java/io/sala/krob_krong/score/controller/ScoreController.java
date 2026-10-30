@@ -7,9 +7,8 @@ import io.sala.krob_krong.score.dto.response.SaveScoresResponse;
 import io.sala.krob_krong.score.dto.response.ScoreResponse;
 import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
 import io.sala.krob_krong.score.service.ScoreService;
-import java.util.UUID;
-
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -47,9 +46,7 @@ public class ScoreController {
     @GetMapping("/students/{studentId}/scores")
     @PreAuthorize("hasAuthority('score.read')")
     public PageResponse<StudentScoreResponse> listByStudent(
-            @PathVariable UUID schoolId,
-            @PathVariable UUID studentId,
-            @Valid PageRequest pageRequest) {
+            @PathVariable UUID schoolId, @PathVariable UUID studentId, @Valid PageRequest pageRequest) {
         return scoreService.listByStudent(schoolId, studentId, pageRequest);
     }
 }

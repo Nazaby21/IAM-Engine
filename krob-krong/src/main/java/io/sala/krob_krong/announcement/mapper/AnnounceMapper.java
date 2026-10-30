@@ -7,13 +7,11 @@ import io.sala.krob_krong.event.dto.response.EventResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-@Mapper (componentModel = "spring")
+@Mapper(componentModel = "spring")
 public interface AnnounceMapper {
-    AnnounceResponse toResponse (AnnouncementEntity entity);
-    AnnouncementEntity toEntity (AnnounceMakeRequest request);
+    AnnounceResponse toResponse(AnnouncementEntity entity);
 
-    void updateEvent(
-            @MappingTarget AnnounceResponse response,
-            EventResponse event
-    );
+    AnnouncementEntity toEntity(AnnounceMakeRequest request);
+
+    void updateEvent(@MappingTarget AnnounceResponse response, EventResponse event);
 }

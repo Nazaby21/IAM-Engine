@@ -6,7 +6,6 @@ import io.sala.krob_krong.event.repository.EventRepository;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 import java.time.LocalDate;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,9 +32,6 @@ public class EventValidator {
     }
 
     public EventEntity findById(UUID id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() ->
-                        new BusinessException(IAMErrorCode.EVENT_NOT_FOUND)
-                );
+        return eventRepository.findById(id).orElseThrow(() -> new BusinessException(IAMErrorCode.EVENT_NOT_FOUND));
     }
 }
