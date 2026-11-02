@@ -1,6 +1,7 @@
 package io.sala.krob_krong.assessment.dto.request;
 
 import io.sala.krob_krong.common.constant.AssessmentType;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,8 +17,8 @@ public class CreateAssessmentRequest {
 
     private AssessmentType assessmentType;
     private String description;
-    private String startDate;
-    private String endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private Integer duration;
     private Integer totalScore;
 }

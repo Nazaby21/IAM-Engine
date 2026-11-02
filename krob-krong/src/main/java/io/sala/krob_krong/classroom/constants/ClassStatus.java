@@ -5,21 +5,20 @@ import io.sala.krob_krong.common.exceptions.BusinessException;
 import io.sala.krob_krong.iam.error.IAMErrorCode;
 
 public enum ClassStatus {
-    AVAILABLE,
-    UNAVAILABLE,
+    ACTIVE,
+    INACTIVE,
     UPCOMING;
 
     @JsonCreator
-    public static ClassStatus from(String value){
+    public static ClassStatus from(String value) {
 
-        if(value == null){
+        if (value == null) {
             return null;
-        }try{
+        }
+        try {
             return ClassStatus.valueOf(value.trim().toUpperCase());
-        }catch (BusinessException e){
+        } catch (BusinessException e) {
             throw new BusinessException(IAMErrorCode.INVALID_CLASS_STATUS);
         }
-
     }
-
 }

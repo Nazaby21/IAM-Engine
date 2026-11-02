@@ -5,6 +5,7 @@ import io.sala.krob_krong.common.constant.AssessmentType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,10 +36,10 @@ public class AssessmentEntity {
     private String description;
 
     @Column(name = "started_date")
-    private Instant startedDate;
+    private LocalDate startedDate;
 
     @Column(name = "ended_date")
-    private Instant endedDate;
+    private LocalDate endedDate;
 
     @Column(name = "duration")
     private Integer duration;

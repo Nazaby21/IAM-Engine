@@ -11,8 +11,6 @@ import io.sala.krob_krong.common.request.PageRequest;
 import io.sala.krob_krong.common.response.PageResponse;
 import io.sala.krob_krong.course_subject.repository.CourseSubjectRepository;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,18 +25,16 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class AssessmentServiceImpl implements AssessmentService {
 
-    private static final ZoneId ZONE = ZoneId.of("Asia/Phnom_Penh");
     private final AssessmentRepository assessmentRepository;
     private final CourseSubjectRepository courseSubjectRepository;
+    UUID userId = currentUserId();
 
     @Override
     public CreateAssessmentResponse create(
             UUID schoolId, UUID courseId, UUID subjectId, CreateAssessmentRequest request) {
         checkCourseSubject(schoolId, courseId, subjectId);
 
-        LocalDate start = LocalDate.parse(request.getStartDate());
-        LocalDate end = LocalDate.parse(request.getEndDate());
-        if (end.isBefore(start)) {
+        if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end_date must not be before start_date");
         }
 
@@ -47,11 +43,12 @@ public class AssessmentServiceImpl implements AssessmentService {
         entity.setSubjectId(subjectId);
         entity.setType(request.getAssessmentType());
         entity.setDescription(request.getDescription());
-        entity.setStartedDate(start.atStartOfDay(ZONE).toInstant());
-        entity.setEndedDate(end.atStartOfDay(ZONE).toInstant());
+        entity.setStartedDate(request.getStartDate());
+        entity.setEndedDate(request.getEndDate());
         entity.setDuration(request.getDuration());
         entity.setTotalScore(BigDecimal.valueOf(request.getTotalScore()));
         entity.setStatus(AssessmentStatus.ACTIVE);
+        entity.setCreatedBy(userId);
 
         return toResponse(assessmentRepository.save(entity));
     }
@@ -82,17 +79,16 @@ public class AssessmentServiceImpl implements AssessmentService {
         AssessmentEntity entity = assessmentRepository
                 .findById(assessmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found"));
-        LocalDate start = LocalDate.parse(request.getStartDate());
-        LocalDate end = LocalDate.parse(request.getEndDate());
-        if (end.isBefore(start)) {
+        if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end_date must not be before start_date");
         }
         entity.setType(request.getAssessmentType());
         entity.setDescription(request.getDescription());
-        entity.setStartedDate(start.atStartOfDay(ZONE).toInstant());
-        entity.setEndedDate(end.atStartOfDay(ZONE).toInstant());
+        entity.setStartedDate(request.getStartDate());
+        entity.setEndedDate(request.getEndDate());
         entity.setDuration(request.getDuration());
         entity.setTotalScore(BigDecimal.valueOf(request.getTotalScore()));
+        entity.setUpdatedBy(userId);
 
         return toResponse(assessmentRepository.save(entity));
     }
@@ -122,11 +118,15 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .courseSubjectId(a.getCourseId())
                 .type(a.getType())
                 .description(a.getDescription())
-                .startDate(a.getStartedDate().atZone(ZONE).toLocalDate())
-                .endDate(a.getEndedDate().atZone(ZONE).toLocalDate())
+                .startDate(a.getStartedDate())
+                .endDate(a.getEndedDate())
                 .duration(a.getDuration())
                 .totalScore(a.getTotalScore().intValue())
                 .status(a.getStatus())
                 .build();
+    }
+
+    private UUID currentUserId() {
+        return UUID.fromString("2bcee81f-2d90-4143-82dc-16e1e54467a5");
     }
 }

@@ -131,7 +131,7 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
 
         if (request.getCode() != null
                 && courseSubjectRepository.existsByIdCourseIdAndCodeAndIdSubjectIdNot(
-                courseId, request.getCode(), subjectId)) {
+                        courseId, request.getCode(), subjectId)) {
             throw new BusinessException(IAMErrorCode.COURSE_SUBJECT_CODE_ALREADY_EXISTS);
         }
 
@@ -410,6 +410,6 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
 
     private UUID currentUserId() {
         // resolve from the authenticated principal (JWT "sub")
-        return UUID.fromString("dd58c768-a6dd-4f59-9ab9-63ff55898834");
+        return UUID.fromString("2bcee81f-2d90-4143-82dc-16e1e54467a5");
     }
 }

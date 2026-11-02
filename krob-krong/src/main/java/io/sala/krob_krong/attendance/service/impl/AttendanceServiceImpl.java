@@ -101,6 +101,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     private UUID currentUserId() {
-        return UUID.fromString("017bbe3e-424a-4bda-8b5c-4e2b090d4712");
+        return UUID.fromString("2bcee81f-2d90-4143-82dc-16e1e54467a5");
     }
 }
