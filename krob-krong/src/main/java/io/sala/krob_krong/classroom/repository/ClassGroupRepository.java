@@ -9,7 +9,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ClassGroupRepository extends JpaRepository<ClassGroupEntity, UUID> {
 
-    List<ClassGroupEntity> findByCourseId(UUID courseId);
-
-    List<ClassGroupEntity> findByCourseIdAndSubjectId(UUID courseId, UUID subjectId);
 }

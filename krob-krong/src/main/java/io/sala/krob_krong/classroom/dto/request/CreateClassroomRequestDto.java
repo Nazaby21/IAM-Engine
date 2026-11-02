@@ -1,7 +1,8 @@
 package io.sala.krob_krong.classroom.dto.request;
 
-import io.sala.krob_krong.classroom.constants.ClassStatus;
 import io.sala.krob_krong.classroom.constants.ClassType;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,10 +21,10 @@ public class CreateClassroomRequestDto {
 
     @NotNull(message = "Capacity is required")
     @Positive(message = "Capacity must be positive number")
-    @Size(max = 200, message = "Capacity must not greater than 200")
+    @Min(value = 1, message = "Capacity must be at least 1")
+    @Max(value = 200, message = "Capacity cannot exceed 50")
     private Integer capacity;
 
     @NotNull(message = "Class type is required")
     private ClassType classType;
-
 }

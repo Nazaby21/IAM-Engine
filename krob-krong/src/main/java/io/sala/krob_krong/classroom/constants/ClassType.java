@@ -9,15 +9,14 @@ public enum ClassType {
     OFFLINE;
 
     @JsonCreator
-    public static ClassType from(String value){
-        if(value == null){
+    public static ClassType from(String value) {
+        if (value == null) {
             return null;
-        }try{
+        }
+        try {
             return ClassType.valueOf(value.trim().toUpperCase());
-        }catch (BusinessException e){
+        } catch (BusinessException e) {
             throw new BusinessException(IAMErrorCode.INVALID_CLASS_TYPE);
         }
-
     }
-
 }

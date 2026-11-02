@@ -3,24 +3,13 @@ package io.sala.krob_krong.classroom.dto.response;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.sala.krob_krong.classroom.constants.ClassStatus;
 import io.sala.krob_krong.classroom.constants.ClassType;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
-@JsonPropertyOrder({
-        "id",
-        "name",
-        "classType",
-        "status",
-        "floor",
-        "capacity",
-        "schoolId",
-        "schoolName",
-        "branchId"
-})
+@JsonPropertyOrder({"id", "name", "classType", "status", "floor", "capacity", "schoolId", "schoolName", "branchId"})
 public class ClassroomResponseDto {
 
     // identity

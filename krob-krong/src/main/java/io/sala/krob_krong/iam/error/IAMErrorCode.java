@@ -115,10 +115,10 @@ public enum IAMErrorCode implements ErrorCode {
     CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
     INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
 
-    INVALID_CLASS_STATUS(400,"Invalid class's status"),
-    INVALID_CLASS_TYPE(400,"Invalid class's type"),
+    INVALID_CLASS_STATUS(400, "Invalid class's status"),
+    INVALID_CLASS_TYPE(400, "Invalid class's type"),
 
-    NOT_REQUIRED_FLOOR(400,"Floor is not allow for online class"),
+    NOT_REQUIRED_FLOOR(400, "Floor is not allow for online class"),
     REQUIRED_FLOOR(400, "Floor is required for offline class");
 
     private final int httpStatus;
