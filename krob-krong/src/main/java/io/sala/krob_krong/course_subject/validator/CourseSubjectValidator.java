@@ -91,7 +91,7 @@ public class CourseSubjectValidator {
         }
         ClassroomEntity room = classroomRepository
                 .findById(in.getClassroomId())
-                .filter(r -> STATUS_ACTIVE.equalsIgnoreCase(r.getStatus()))
+                .filter(r -> STATUS_ACTIVE.equalsIgnoreCase(r.getStatus().toString()))
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.CLASSROOM_NOT_FOUND));
 
         if (!Objects.equals(room.getBranchId(), course.getBranchId())) {

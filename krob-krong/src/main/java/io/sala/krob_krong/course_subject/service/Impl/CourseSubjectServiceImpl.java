@@ -131,7 +131,7 @@ public class CourseSubjectServiceImpl implements CourseSubjectService {
 
         if (request.getCode() != null
                 && courseSubjectRepository.existsByIdCourseIdAndCodeAndIdSubjectIdNot(
-                        courseId, request.getCode(), subjectId)) {
+                courseId, request.getCode(), subjectId)) {
             throw new BusinessException(IAMErrorCode.COURSE_SUBJECT_CODE_ALREADY_EXISTS);
         }
 

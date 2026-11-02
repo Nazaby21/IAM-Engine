@@ -41,6 +41,11 @@ public enum IAMErrorCode implements ErrorCode {
     DUPLICATE_SCHEDULE(409, "Duplicate schedule are not allowed"),
     STUDENT_ALREADY_MARKED(409, "Attendance already marked for student"),
     ATTENDANCE_NOT_FOUND(404, "Attendance not found"),
+    SCHEDULE_NAME_DUPLICATED(409, "Schedule name already taken"),
+    SCHEDULE_CLASS_GROUP_REQUIRED(400, "Schedule must have at least one class group"),
+    CLASS_GROUP_FULL(400, "class is full"),
+    TICKET_NOT_FOUND(400, "ticket number is not found"),
+    INVALID_ENROLL_STATUS(400, "enrollment invalid"),
 
     ROLE_NOT_FOUND(404, "Role not found"),
     PERMISSION_NOT_FOUND(404, "Permission not found"),
@@ -73,11 +78,7 @@ public enum IAMErrorCode implements ErrorCode {
     ENROLLMENT_REQUEST_INVALID(400, "this enrollment request invalid"),
     ENROLLMENT_NOT_FOUND(400, "not found"),
     CANNOT_EXCHANGE(400, "cannot exchange enrollment ticket"),
-    INVALID_ENROLL_STATUS(400, "enrollment invalid"),
-
     TICKET_EXISTING(400, "ticket id still existing, please wait 1 minute"),
-    TICKET_NOT_FOUND(400, "ticket number is not found"),
-    CLASS_GROUP_FULL(400, "class is full"),
 
     PAYMENT_ALREADY_EXISTS(400, "user aready paid for this enrollment"),
     PAYMENT_NOT_FOUND(400, "payment not found"),
@@ -113,9 +114,12 @@ public enum IAMErrorCode implements ErrorCode {
     SCHEDULE_NOT_FOUND(404, "Schedule not found"),
     CLASSROOM_BUSY(409, "An instructor is already teaching at this time in another course subject"),
     INSTRUCTOR_BUSY(409, "An instructor is already teaching at this time in another course subject"),
-    CLASS_GROUP_SCHEDULE_REQUIRED(400, "Class group must have at least one schedule"),
-    SCHEDULE_CLASS_GROUP_REQUIRED(400, "Schedule must have at least one class group"),
-    SCHEDULE_NAME_DUPLICATED(400, "Schedule name already exists in this course subject");
+
+    INVALID_CLASS_STATUS(400,"Invalid class's status"),
+    INVALID_CLASS_TYPE(400,"Invalid class's type"),
+
+    NOT_REQUIRED_FLOOR(400,"Floor is not allow for online class"),
+    REQUIRED_FLOOR(400, "Floor is required for offline class");
 
     private final int httpStatus;
     private final String defaultMessage;

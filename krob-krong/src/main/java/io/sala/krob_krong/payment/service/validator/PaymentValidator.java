@@ -49,7 +49,7 @@ public class PaymentValidator {
     private void validateSecretKey(String requestSecret) {
         if (!StringUtils.hasText(requestSecret)
                 || !MessageDigest.isEqual(
-                        secretKey.getBytes(StandardCharsets.UTF_8), requestSecret.getBytes(StandardCharsets.UTF_8))) {
+                secretKey.getBytes(StandardCharsets.UTF_8), requestSecret.getBytes(StandardCharsets.UTF_8))) {
             throw new BusinessException(IAMErrorCode.INVALID_SECRET_KEY);
         }
     }

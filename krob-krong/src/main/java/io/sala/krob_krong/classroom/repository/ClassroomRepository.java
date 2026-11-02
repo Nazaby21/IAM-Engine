@@ -2,6 +2,7 @@ package io.sala.krob_krong.classroom.repository;
 
 import io.sala.krob_krong.classroom.entity.ClassroomEntity;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,6 @@ public interface ClassroomRepository extends JpaRepository<ClassroomEntity, UUID
             ORDER BY c.name ASC
             """)
     List<ClassroomEntity> findOptions(@Param("branchId") UUID branchId, @Param("pattern") String pattern);
+    Optional<ClassroomEntity> findByIdAndBranchId(UUID classroomId, UUID branchId);
+    List<ClassroomEntity> findAllByBranchIdOrderByIdAsc(UUID branchId);
 }

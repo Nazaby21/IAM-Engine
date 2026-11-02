@@ -59,8 +59,8 @@ public class CourseSubjectEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-        @JoinColumn(name = "course_id", referencedColumnName = "course_id", insertable = false, updatable = false),
-        @JoinColumn(name = "subject_id", referencedColumnName = "subject_id", insertable = false, updatable = false)
+            @JoinColumn(name = "course_id", referencedColumnName = "course_id", insertable = false, updatable = false),
+            @JoinColumn(name = "subject_id", referencedColumnName = "subject_id", insertable = false, updatable = false)
     })
     private CourseSubjectEntity courseSubject;
 }

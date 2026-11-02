@@ -1,12 +1,12 @@
 
 -- 1. Drop the payment foreign key if it exists
 ALTER TABLE payment
-DROP CONSTRAINT IF EXISTS payment_enrollment_id_fkey;
+    DROP CONSTRAINT IF EXISTS payment_enrollment_id_fkey;
 
 -- 2. Change payment.enrollment_id to VARCHAR(255)
 ALTER TABLE payment
-ALTER COLUMN enrollment_id TYPE VARCHAR(255)
-    USING enrollment_id::VARCHAR;
+    ALTER COLUMN enrollment_id TYPE VARCHAR(255)
+        USING enrollment_id::VARCHAR;
 
 -- 3. Recreate the payment foreign key
 ALTER TABLE payment
@@ -24,8 +24,8 @@ ALTER TABLE schedule
 
 -- 6. Change schedule.days_of_week from VARCHAR to JSONB
 ALTER TABLE schedule
-ALTER COLUMN days_of_week TYPE JSONB
-    USING days_of_week::JSONB;
+    ALTER COLUMN days_of_week TYPE JSONB
+        USING days_of_week::JSONB;
 
 -- 7. Add max_students to schedule if it does not exist
 ALTER TABLE schedule
