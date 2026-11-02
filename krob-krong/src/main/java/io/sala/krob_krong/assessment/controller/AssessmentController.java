@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,52 +25,48 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/schools/{schoolId}")
+@RequestMapping("/api/schools/{school_id}")
 public class AssessmentController {
 
     private final AssessmentService assessmentService;
 
-    @PostMapping("/courses/{courseId}/subjects/{subjectId}/assessments")
+    @PostMapping("/courses/{course_id}/subjects/{subject_id}/assessments")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('assessment.create')")
     public CreateAssessmentResponse create(
-            @PathVariable UUID schoolId,
-            @PathVariable UUID courseId,
-            @PathVariable UUID subjectId,
+            @PathVariable("school_id") UUID schoolId,
+            @PathVariable("course_id") UUID courseId,
+            @PathVariable("subject_id") UUID subjectId,
             @Valid @RequestBody CreateAssessmentRequest request) {
         return assessmentService.create(schoolId, courseId, subjectId, request);
     }
 
-    @GetMapping("/courses/{courseId}/subjects/{subjectId}/assessments")
-    @PreAuthorize("hasAuthority('assessment.read')")
+    @GetMapping("/courses/{course_id}/subjects/{subject_id}/assessments")
     public PageResponse<CreateAssessmentResponse> list(
-            @PathVariable UUID schoolId,
-            @PathVariable UUID courseId,
-            @PathVariable UUID subjectId,
+            @PathVariable("school_id") UUID schoolId,
+            @PathVariable("course_id") UUID courseId,
+            @PathVariable("subject_id") UUID subjectId,
             @RequestParam(required = false) AssessmentType type,
             @Valid PageRequest pageRequest) {
         return assessmentService.list(schoolId, courseId, subjectId, type, pageRequest);
     }
 
-    @GetMapping("/assessments/{assessmentId}")
-    @PreAuthorize("hasAuthority('assessment.read')")
-    public CreateAssessmentResponse get(@PathVariable UUID schoolId, @PathVariable UUID assessmentId) {
+    @GetMapping("/assessments/{assessment_id}")
+    public CreateAssessmentResponse get(
+            @PathVariable("school_id") UUID schoolId, @PathVariable("assessment_id") UUID assessmentId) {
         return assessmentService.getById(schoolId, assessmentId);
     }
 
-    @PutMapping("/assessments/{assessmentId}")
-    @PreAuthorize("hasAuthority('assessment.update')")
+    @PutMapping("/assessments/{assessment_id}")
     public CreateAssessmentResponse update(
-            @PathVariable UUID schoolId,
-            @PathVariable UUID assessmentId,
+            @PathVariable("school_id") UUID schoolId,
+            @PathVariable("assessment_id") UUID assessmentId,
             @Valid @RequestBody CreateAssessmentRequest request) {
         return assessmentService.updateById(schoolId, assessmentId, request);
     }
 
-    @DeleteMapping("/assessments/{assessmentId}")
+    @DeleteMapping("/assessments/{assessment_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAuthority('assessment.delete')")
-    public void Delete(@PathVariable UUID schoolId, @PathVariable UUID assessmentId) {
+    public void Delete(@PathVariable("assessment_id") UUID schoolId, @PathVariable UUID assessmentId) {
         assessmentService.delete(schoolId, assessmentId);
     }
 }

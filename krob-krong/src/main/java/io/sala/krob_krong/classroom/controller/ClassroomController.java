@@ -48,7 +48,8 @@ public class ClassroomController {
     }
 
     @GetMapping("/classrooms/branch/{branch_id}")
-    public ResponseEntity<List<ClassroomResponseDto>> getAllClassroomByBranchId(@PathVariable("branch_id") UUID branchId) {
+    public ResponseEntity<List<ClassroomResponseDto>> getAllClassroomByBranchId(
+            @PathVariable("branch_id") UUID branchId) {
         List<ClassroomResponseDto> responseDto = classroomService.getAllClassroomByBranchId(branchId);
         return ResponseEntity.ok(responseDto);
     }

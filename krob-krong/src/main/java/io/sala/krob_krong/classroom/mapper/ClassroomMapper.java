@@ -6,7 +6,8 @@ import io.sala.krob_krong.classroom.dto.response.ClassroomResponseDto;
 import io.sala.krob_krong.classroom.entity.ClassroomEntity;
 import org.mapstruct.*;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+@Mapper(
+        componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ClassroomMapper {
