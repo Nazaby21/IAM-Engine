@@ -88,6 +88,7 @@ public enum IAMErrorCode implements ErrorCode {
     CLASS_GROUP_INSTRUCTOR_DUPLICATED(400, "Each class group must have a different instructor"),
     CLASS_GROUP_NOT_FOUND(400, "Class Group not found"),
     CLASS_GROUP_CLASSROOM_DUPLICATED(400, "Each classroom must have a different class group"),
+    CLASSROOM_ALREADY_EXISTS(400,"Classroom with this name already exists in this branch"),
 
     // ---------- schedule ----------
     SCHEDULE_INVALID_TIME(400, "End time must be after start time"),

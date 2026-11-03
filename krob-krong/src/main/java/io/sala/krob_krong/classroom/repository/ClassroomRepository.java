@@ -21,4 +21,5 @@ public interface ClassroomRepository extends JpaRepository<ClassroomEntity, UUID
     List<ClassroomEntity> findOptions(@Param("branchId") UUID branchId, @Param("pattern") String pattern);
     Optional<ClassroomEntity> findByIdAndBranchId(UUID classroomId, UUID branchId);
     List<ClassroomEntity> findAllByBranchIdOrderByIdAsc(UUID branchId);
+    boolean existsByBranchIdAndNameIgnoreCase(UUID branchId, String name);
 }

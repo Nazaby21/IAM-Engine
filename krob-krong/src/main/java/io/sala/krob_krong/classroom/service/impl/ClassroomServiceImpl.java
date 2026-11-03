@@ -16,6 +16,7 @@ import io.sala.krob_krong.school.entity.SchoolEntity;
 import io.sala.krob_krong.school.repository.SchoolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,9 +35,14 @@ public class ClassroomServiceImpl implements ClassroomService {
     private final SchoolRepository schoolRepository;
 
     @Override
+    @Transactional
     public ClassroomResponseDto createClassroom(UUID branchId, CreateClassroomRequestDto requestDto) {
 
         validateFloor(requestDto.getClassType(), requestDto.getFloor());
+
+        // normalize input
+        String name = requestDto.getName().trim();
+        requestDto.setName(name);
 
         BranchEntity branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.BRANCH_NOT_FOUND));
@@ -44,12 +50,23 @@ public class ClassroomServiceImpl implements ClassroomService {
         SchoolEntity school = schoolRepository.findById(branch.getSchoolId())
                 .orElseThrow(() -> new BusinessException(IAMErrorCode.SCHOOL_NOT_FOUND));
 
+        // duplicate check
+        if (classroomRepository.existsByBranchIdAndNameIgnoreCase(branch.getId(), name)) {
+            throw new BusinessException(IAMErrorCode.CLASSROOM_ALREADY_EXISTS);
+        }
+
         ClassroomEntity classroom = classroomMapper.toEntity(requestDto);
         classroom.setBranchId(branch.getId());
         classroom.setSchoolId(branch.getSchoolId());
         classroom.setCreatedBy(currentUserId());
-        ClassroomEntity saved = classroomRepository.save(classroom);
-        return classroomMapper.toResponse(saved,school.getDisplayName());
+
+        try {
+            ClassroomEntity saved = classroomRepository.save(classroom);
+            return classroomMapper.toResponse(saved, school.getDisplayName());
+        } catch (DataIntegrityViolationException ex) {
+            // two concurrent requests passed the exists check; DB constraint caught it
+            throw new BusinessException(IAMErrorCode.CLASSROOM_ALREADY_EXISTS);
+        }
     }
 
     @Override

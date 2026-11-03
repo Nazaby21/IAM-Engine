@@ -44,7 +44,7 @@ public class ClassroomEntity {
     private String classType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 30, nullable = false)
+        @Column(name = "status", length = 30, nullable = false)
     private ClassStatus status;
 
     @CreationTimestamp

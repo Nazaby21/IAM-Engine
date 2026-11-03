@@ -28,7 +28,7 @@ import tools.jackson.databind.PropertyNamingStrategies;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class    GlobalExceptionHandler {
 
     private final ExceptionTranslator translator;
     private final boolean exposeMessageOnUnknown;
