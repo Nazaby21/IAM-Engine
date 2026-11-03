@@ -74,7 +74,7 @@ enrolled authenticator unusable, so each person would need a [reset](#reset-a-lo
 2. In psql, create the bootstrap grant:
 
    ```sql
-   \set email 'admin@example.com'
+   \set email 'admin@krobkrong.com'
    INSERT INTO user_role (user_id, role_id, source)
    SELECT u.id, r.id, 'bootstrap'
    FROM app_user u JOIN role r ON r.code = 'super_admin'

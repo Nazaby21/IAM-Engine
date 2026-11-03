@@ -1,5 +1,6 @@
 package io.sala.krob_krong.payment.dto.response;
 
+import io.sala.krob_krong.enrollment.dto.response.EnrollmentResponse;
 import io.sala.krob_krong.payment.constant.Currency;
 import io.sala.krob_krong.payment.constant.Method;
 import io.sala.krob_krong.payment.constant.PaymentStatus;
@@ -11,7 +12,7 @@ import lombok.Data;
 @Data
 public class PaymentResponse {
     private String id;
-    private String enrollmentId;
+    private EnrollmentResponse enrollment;
     private BigDecimal amount;
     private Currency currency;
     private Method method;

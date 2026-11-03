@@ -15,13 +15,12 @@ public class PaymentVerifyRequest {
     @JsonProperty("ticket_number")
     private String ticketNumber;
 
-    @JsonProperty ("secret_key")
-    @NotBlank (message = "secret is required for verification")
+    @JsonProperty("secret_key")
+    @NotBlank(message = "secret is required for verification")
     private String secretKey;
 
     @AssertTrue(message = "Provide either payment_id or ticket_number, not both")
     public boolean isValidIdentifier() {
-        return StringUtils.hasText(paymentId)
-                ^ StringUtils.hasText(ticketNumber);
+        return StringUtils.hasText(paymentId) ^ StringUtils.hasText(ticketNumber);
     }
 }

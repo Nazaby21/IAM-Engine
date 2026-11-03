@@ -2,7 +2,6 @@ package io.sala.krob_krong.account.repository;
 
 import io.sala.krob_krong.account.entity.UserEntity;
 import jakarta.persistence.LockModeType;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,14 +15,18 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID>, JpaSpec
     @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
     Optional<UserEntity> findByIdForUpdate(@Param("id") UUID id);
 
-    @Query("""
-        SELECT u FROM UserEntity u
-        WHERE u.schoolId = (SELECT b.schoolId FROM BranchEntity b WHERE b.id = :branchId)
-          AND u.roleId = (SELECT r.id FROM RoleEntity r WHERE r.code = 'instructor')
-          AND (LOWER(u.firstName) LIKE :pattern
-               OR LOWER(u.lastName) LIKE :pattern
-               OR LOWER(u.email)    LIKE :pattern)
-        ORDER BY u.firstName ASC, u.lastName ASC
-        """)
-    List<UserEntity> findInstructors(@Param("branchId") UUID branchId, @Param("pattern") String pattern);
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM app_user u
+                JOIN enrollment e
+                ON e.user_id = u.id
+                JOIN class_group cg
+                ON cg.id = e.class_group_id
+                WHERE u.id = :studentId
+                  AND e.status = 'PAID'
+                  AND cg.schedule_id = :scheduleId
+            )
+            """, nativeQuery = true)
+    boolean existsByStudentIdAndScheduleId(@Param("studentId") UUID studentId, @Param("scheduleId") UUID scheduleId);
 }

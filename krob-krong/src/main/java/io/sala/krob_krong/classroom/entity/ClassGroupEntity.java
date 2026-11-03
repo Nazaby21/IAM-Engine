@@ -1,5 +1,6 @@
 package io.sala.krob_krong.classroom.entity;
 
+import io.sala.krob_krong.schedule.entity.ScheduleEntity;
 import jakarta.persistence.*;
 import java.util.UUID;
 import lombok.Getter;
@@ -18,12 +19,6 @@ public class ClassGroupEntity {
     @Column(name = "id", length = 36)
     private UUID id;
 
-    @Column(name = "course_id", length = 36, nullable = false)
-    private UUID courseId;
-
-    @Column(name = "subject_id", length = 36, nullable = false)
-    private UUID subjectId;
-
     @Column(name = "classroom_id", length = 36)
     private UUID classroomId;
 
@@ -33,8 +28,8 @@ public class ClassGroupEntity {
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "capacity")
-    private int capacity;
+    @Column(nullable = false)
+    private Integer capacity = 0;
 
     @Column(name = "status", length = 30, nullable = false)
     private String status;
@@ -44,4 +39,8 @@ public class ClassGroupEntity {
 
     @Column(name = "updated_by")
     private UUID updatedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "schedule_id", nullable = false)
+    private ScheduleEntity schedule;
 }

@@ -4,4 +4,8 @@ public interface TicketService {
     String generate(String id);
 
     boolean exists(String id);
+
+    String getEnrollmentId(String ticketNumber);
+
+    String getTicketNumber(String enrollmentId);
 }

@@ -6,9 +6,15 @@ import io.sala.krob_krong.enrollment.dto.response.TicketResponse;
 import io.sala.krob_krong.enrollment.entity.EnrollmentEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface EnrollmentMapper {
     EnrollmentResponse toResponse(EnrollmentEntity entity);
 

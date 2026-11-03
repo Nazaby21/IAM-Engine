@@ -19,6 +19,4 @@ public interface CourseSubjectService {
     CourseSubjectResponse update(UUID courseId, UUID subjectId, CourseSubjectUpdateRequest request);
 
     void remove(UUID courseId, UUID subjectId);
-
-    List<InstructorResponse> listInstructors(UUID branchId, String keyword);
 }

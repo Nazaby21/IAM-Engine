@@ -19,7 +19,6 @@ import lombok.Setter;
 public class CourseSubjectResponse {
     private UUID courseId;
     private SubjectResponse subject;
-    private InstructorResponse instructor;
     private String code;
     private BigDecimal price;
     private String priceType;
@@ -29,7 +28,5 @@ public class CourseSubjectResponse {
     private String currency;
     private String status;
     private Boolean isPublic;
-    private Integer maxStudents;
-    private List<ClassGroupResponse> classGroups;
-    private List<ScheduleResponse> schedules;
+    List<ScheduleResponse> schedules;
 }
