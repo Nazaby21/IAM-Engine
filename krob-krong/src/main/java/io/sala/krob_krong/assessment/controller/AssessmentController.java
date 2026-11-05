@@ -66,7 +66,9 @@ public class AssessmentController {
 
     @DeleteMapping("/assessments/{assessment_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void Delete(@PathVariable("assessment_id") UUID schoolId, @PathVariable UUID assessmentId) {
+    public void delete(
+            @PathVariable("school_id") UUID schoolId,
+            @PathVariable("assessment_id") UUID assessmentId) {
         assessmentService.delete(schoolId, assessmentId);
     }
 }

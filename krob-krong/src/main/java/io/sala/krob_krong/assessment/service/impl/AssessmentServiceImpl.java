@@ -38,6 +38,16 @@ public class AssessmentServiceImpl implements AssessmentService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end_date must not be before start_date");
         }
 
+        if (assessmentRepository.existsOverlap(courseId, request.getStartDate(), request.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Course already has an assessment in this period");
+        }
+
+        if (assessmentRepository.existsByCourseIdAndSubjectIdAndTypeAndDescription(
+                courseId, subjectId, request.getAssessmentType(), request.getDescription())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Assessment already exists");
+        }
+
         AssessmentEntity entity = new AssessmentEntity();
         entity.setCourseId(courseId);
         entity.setSubjectId(subjectId);
@@ -77,10 +87,28 @@ public class AssessmentServiceImpl implements AssessmentService {
     @Override
     public CreateAssessmentResponse updateById(UUID schoolId, UUID assessmentId, CreateAssessmentRequest request) {
         AssessmentEntity entity = assessmentRepository
-                .findById(assessmentId)
+                .findInSchool(assessmentId, schoolId)   // was findById: ignored schoolId, cross-school leak
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found"));
+
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end_date must not be before start_date");
+        }
+
+        if (assessmentRepository.existsOverlapExcluding(
+                entity.getCourseId(), request.getStartDate(), request.getEndDate(), assessmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Course already has an assessment in this period");
+        }
+
+        if (assessmentRepository.existsByCourseIdAndSubjectIdAndTypeAndDescription(
+                entity.getCourseId(), entity.getSubjectId(), request.getAssessmentType(),
+                request.getDescription(), assessmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Assessment already exists");
+        }
+
+        if (entity.getTotalScore().compareTo(BigDecimal.valueOf(request.getTotalScore())) != 0
+                && assessmentRepository.hasScores(assessmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot change total_score, assessment already has scores");
         }
         entity.setType(request.getAssessmentType());
         entity.setDescription(request.getDescription());

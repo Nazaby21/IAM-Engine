@@ -6,6 +6,9 @@ import io.sala.krob_krong.score.dto.request.SaveScoresRequest;
 import io.sala.krob_krong.score.dto.response.SaveScoresResponse;
 import io.sala.krob_krong.score.dto.response.ScoreResponse;
 import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
+import io.sala.krob_krong.score.dto.response.SubjectScoreResponse;
+
+import java.util.List;
 import java.util.UUID;
 
 public interface ScoreService {
@@ -15,4 +18,6 @@ public interface ScoreService {
     SaveScoresResponse save(UUID schoolId, UUID assessmentId, SaveScoresRequest request);
 
     PageResponse<StudentScoreResponse> listByStudent(UUID schoolId, UUID studentId, PageRequest pageRequest);
+
+    List<SubjectScoreResponse> subjectTotals(UUID schoolId, UUID studentId, UUID courseId);
 }

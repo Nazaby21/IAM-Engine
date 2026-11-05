@@ -2,6 +2,8 @@ package io.sala.krob_krong.assessment.repository;
 
 import io.sala.krob_krong.assessment.entity.AssessmentEntity;
 import io.sala.krob_krong.common.constant.AssessmentType;
+
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -39,4 +41,36 @@ public interface AssessmentRepository extends JpaRepository<AssessmentEntity, UU
 
     @Query("select count(s) > 0 from ScoreEntity s where s.assessmentId = :assessmentId")
     boolean hasScores(@Param("assessmentId") UUID assessmentId);
+
+    boolean existsByCourseIdAndSubjectIdAndTypeAndDescription(
+            UUID courseId, UUID subjectId, AssessmentType type, String description);
+
+    boolean existsByCourseIdAndSubjectIdAndTypeAndDescription(
+            UUID courseId, UUID subjectId, AssessmentType type, String description, UUID id);
+
+    @Query("""
+    select count(a) > 0
+    from AssessmentEntity a
+    where a.courseId = :courseId
+      and a.startedDate <= :endDate
+      and a.endedDate >= :startDate
+    """)
+    boolean existsOverlap(
+            @Param("courseId") UUID courseId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("""
+    select count(a) > 0
+    from AssessmentEntity a
+    where a.courseId = :courseId
+      and a.id <> :excludeId
+      and a.startedDate <= :endDate
+      and a.endedDate >= :startDate
+    """)
+    boolean existsOverlapExcluding(
+            @Param("courseId") UUID courseId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("excludeId") UUID excludeId);
 }

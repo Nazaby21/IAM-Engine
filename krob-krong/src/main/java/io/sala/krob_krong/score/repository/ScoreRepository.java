@@ -1,6 +1,7 @@
 package io.sala.krob_krong.score.repository;
 
 import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
+import io.sala.krob_krong.score.dto.response.SubjectScoreResponse;
 import io.sala.krob_krong.score.entity.ScoreEntity;
 import java.util.Collection;
 import java.util.List;
@@ -44,4 +45,15 @@ public interface ScoreRepository extends JpaRepository<ScoreEntity, UUID> {
       and s.studentId = :studentId
     """)
     Page<StudentScoreResponse> findByStudentId(@Param("studentId") UUID studentId, Pageable pageable);
+
+    @Query("""
+    select new io.sala.krob_krong.score.dto.response.SubjectScoreResponse(
+        a.subjectId, sum(coalesce(s.score, 0)), sum(a.totalScore))
+    from AssessmentEntity a
+    left join ScoreEntity s on s.assessmentId = a.id and s.studentId = :studentId
+    where a.courseId = :courseId
+    group by a.subjectId
+    """)
+    List<SubjectScoreResponse> findSubjectTotals(
+            @Param("studentId") UUID studentId, @Param("courseId") UUID courseId);
 }

@@ -9,6 +9,7 @@ import io.sala.krob_krong.score.dto.request.ScoreItemRequest;
 import io.sala.krob_krong.score.dto.response.SaveScoresResponse;
 import io.sala.krob_krong.score.dto.response.ScoreResponse;
 import io.sala.krob_krong.score.dto.response.StudentScoreResponse;
+import io.sala.krob_krong.score.dto.response.SubjectScoreResponse;
 import io.sala.krob_krong.score.entity.ScoreEntity;
 import io.sala.krob_krong.score.repository.ScoreRepository;
 import io.sala.krob_krong.score.service.ScoreService;
@@ -107,5 +108,10 @@ public class ScoreServiceImpl implements ScoreService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
         }
         return PageResponse.from(scoreRepository.findByStudentId(studentId, pageRequest.toSpring()));
+    }
+
+    @Override
+    public List<SubjectScoreResponse> subjectTotals(UUID schoolId, UUID studentId, UUID courseId) {
+        return scoreRepository.findSubjectTotals(studentId, courseId);
     }
 }
